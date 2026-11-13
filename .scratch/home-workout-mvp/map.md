@@ -23,6 +23,8 @@ An MVP spec for the home-workout web app, clear enough to hand to `/to-spec` →
 
 <!-- one line per closed ticket: [title](path): gist -->
 
+- [Choose an exercise dataset with GIFs](issues/01-choose-exercise-dataset.md): vendor the AGPL-3.0 ExerciseDB v1 snapshot (1,500 Exercises with GIFs) as static files; no difficulty tags, small GIFs.
+
 ## Not yet specified
 
 - Saving favourite or recent Workouts in the browser: whether it's in the MVP, and what gets saved.
