@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import type { Exercise } from '@/library'
-import { generate, plannedSeconds, seededRandom, setSeconds } from '@/workout'
-import type { Minutes, Workout, WorkoutRequest } from '@/workout'
+import { DIFFICULTIES, WORKOUT_TYPES } from '@/library'
+import type { BlockRole, Exercise, MuscleGroup } from '@/library'
+import { MINUTES, generate, plannedSeconds, seededRandom, setSeconds } from '@/workout'
+import type { Minutes, Workout, WorkoutRequest, WorkoutSet } from '@/workout'
 
 let nextId = 0
 
@@ -247,11 +248,11 @@ describe('generate', () => {
     )
   })
 
-  it('never repeats an Exercise within a Block', () => {
+  it('never repeats an Exercise within a Block while the pool has enough', () => {
     const library = [
-      ...many(3, { blockRoles: ['warm-up'] }),
-      ...many(3, { blockRoles: ['main'] }),
-      ...many(3, { blockRoles: ['cool-down'] }),
+      ...many(20, { blockRoles: ['warm-up'] }),
+      ...many(8, { blockRoles: ['main'] }),
+      ...many(20, { blockRoles: ['cool-down'] }),
     ]
 
     for (let seed = 1; seed <= 20; seed++) {
@@ -278,6 +279,272 @@ describe('generate', () => {
     expect(exerciseIds(other)).not.toEqual(exerciseIds(first))
   })
 })
+
+describe('generate: preferences', () => {
+  const main = (overrides: Partial<Exercise>) => exercise({ blockRoles: ['main'], ...overrides })
+  const primary = (group: MuscleGroup, overrides: Partial<Exercise> = {}) =>
+    main({ muscleGroups: { primary: [group], secondary: [] }, ...overrides })
+  const seeds = Array.from({ length: 30 }, (_, i) => i + 1)
+
+  it('prefers Exercises at exactly the requested Difficulty in the main Block', () => {
+    const groups: MuscleGroup[] = ['legs', 'glutes', 'chest', 'back', 'shoulders', 'core']
+    const library = [
+      ...groups.map((group) => primary(group, { difficulty: 'beginner' })),
+      ...groups.map((group) => primary(group, { difficulty: 'intermediate' })),
+    ]
+
+    for (const seed of seeds) {
+      const workout = generate(request, library, seededRandom(seed))
+      expect(workout.main.sets.map((set) => set.exercise.difficulty)).toEqual(
+        Array(5).fill('intermediate'),
+      )
+    }
+  })
+
+  it('uses ticked Equipment in at least half the main Block when the pool allows', () => {
+    const groups: MuscleGroup[] = ['legs', 'glutes', 'chest', 'back', 'shoulders', 'core']
+    const library = [
+      ...groups.flatMap((group) => [primary(group), primary(group)]),
+      primary('legs', { equipment: ['dumbbells'] }),
+      primary('back', { equipment: ['dumbbells'] }),
+      primary('core', { equipment: ['kettlebell'] }),
+      primary('chest', { equipment: ['dumbbells'] }),
+    ]
+
+    for (const seed of seeds) {
+      const workout = generate(
+        { ...request, equipment: ['dumbbells', 'kettlebell'] },
+        library,
+        seededRandom(seed),
+      )
+      const withEquipment = workout.main.sets.filter((set) => set.exercise.equipment.length > 0)
+      expect(withEquipment.length).toBeGreaterThanOrEqual(3)
+    }
+  })
+
+  it.each([
+    ['full body', ['legs', 'glutes', 'chest', 'back', 'shoulders', 'core', 'arms'], 6],
+    ['upper body', ['chest', 'back', 'shoulders', 'arms', 'core', 'legs'], 4],
+  ] as const)(
+    'rotates the %s main Block through its Muscle groups',
+    (workoutType, poolGroups, expectedDistinct) => {
+      const library = poolGroups.flatMap((group) =>
+        Array.from({ length: 3 }, () => primary(group, { workoutTypes: [workoutType] })),
+      )
+      const wanted = {
+        'full body': ['legs', 'glutes', 'chest', 'back', 'shoulders', 'core'],
+        'upper body': ['chest', 'back', 'shoulders', 'arms'],
+      }[workoutType]
+
+      for (const seed of seeds) {
+        const workout = generate(
+          { ...request, workoutType, minutes: workoutType === 'full body' ? 60 : 15 },
+          library,
+          seededRandom(seed),
+        )
+        const groups = primaries(workout.main.sets)
+        expect(new Set(groups).size).toBe(expectedDistinct)
+        for (const group of groups) expect(wanted).toContain(group)
+      }
+    },
+  )
+
+  it.each([
+    ['full body', ['legs', 'glutes', 'chest']],
+    ['lower body', ['legs', 'glutes', 'core']],
+    ['cardio/HIIT', ['legs', 'core', 'shoulders']],
+    ['mobility/stretching', ['legs', 'back', 'glutes']],
+  ] as const)(
+    'never puts two %s Exercises with the same primary group next to each other, across Rounds too',
+    (workoutType, poolGroups) => {
+      const library = poolGroups.flatMap((group) =>
+        Array.from({ length: 6 }, () => primary(group, { workoutTypes: [workoutType] })),
+      )
+
+      for (const seed of seeds) {
+        const workout = generate({ ...request, workoutType }, library, seededRandom(seed))
+        expect(neighbourClashes(workout.main.sets)).toBe(0)
+      }
+    },
+  )
+
+  it('fills the lower body main Block with legs and glutes, using core only as a filler', () => {
+    const library = (['legs', 'glutes', 'core'] as const).flatMap((group) =>
+      Array.from({ length: 6 }, () => primary(group, { workoutTypes: ['lower body'] })),
+    )
+
+    for (const seed of seeds) {
+      const workout = generate(
+        { ...request, workoutType: 'lower body', minutes: 15 },
+        library,
+        seededRandom(seed),
+      )
+      expect(primaries(workout.main.sets).filter((group) => group === 'core')).toHaveLength(0)
+    }
+  })
+
+  it('varies the core main Block with distinct core Exercises', () => {
+    const library = Array.from({ length: 8 }, () => primary('core', { workoutTypes: ['core'] }))
+
+    const workout = generate({ ...request, workoutType: 'core' }, library, seededRandom(1))
+
+    expect(primaries(workout.main.sets)).toEqual(Array(5).fill('core'))
+    expect(new Set(workout.main.sets.map((set) => set.exercise.id)).size).toBe(5)
+  })
+
+  it('builds mobility/stretching from joint work, then stretches, then the calmest holds', () => {
+    // Curation tags each kind with its Block role; generation keeps every Block to its role.
+    const mobility = (role: BlockRole) =>
+      many(8, { blockRoles: [role], workoutTypes: ['mobility/stretching'] })
+    const jointWork = mobility('warm-up')
+    const stretches = mobility('main')
+    const calmHolds = mobility('cool-down')
+
+    const workout = generate(
+      { ...request, workoutType: 'mobility/stretching' },
+      [...jointWork, ...stretches, ...calmHolds],
+      seededRandom(1),
+    )
+
+    const ids = (sets: WorkoutSet[]) => sets.map((set) => set.exercise.id)
+    for (const id of ids(workout.warmUp)) expect(jointWork.map((e) => e.id)).toContain(id)
+    for (const id of ids(workout.main.sets)) expect(stretches.map((e) => e.id)).toContain(id)
+    for (const id of ids(workout.coolDown)) expect(calmHolds.map((e) => e.id)).toContain(id)
+  })
+
+  it('prefers warm-up and cool-down Exercises that work the main Block Muscle groups', () => {
+    const others = (role: BlockRole) =>
+      Array.from({ length: 12 }, () =>
+        exercise({ blockRoles: [role], muscleGroups: { primary: ['legs'], secondary: [] } }),
+      )
+    const matching = (role: BlockRole) =>
+      Array.from({ length: 2 }, () =>
+        exercise({ blockRoles: [role], muscleGroups: { primary: ['back'], secondary: ['chest'] } }),
+      )
+    const warmUpMatches = matching('warm-up')
+    const coolDownMatches = matching('cool-down')
+    const library = [
+      ...Array.from({ length: 6 }, () => primary('chest')),
+      ...others('warm-up'),
+      ...warmUpMatches,
+      ...others('cool-down'),
+      ...coolDownMatches,
+    ]
+
+    for (const seed of seeds) {
+      const workout = generate(
+        { ...request, workoutType: 'full body' },
+        library,
+        seededRandom(seed),
+      )
+      const ids = exerciseIds(workout)
+      for (const match of [...warmUpMatches, ...coolDownMatches]) expect(ids).toContain(match.id)
+    }
+  })
+})
+
+describe('generate: fallbacks when the pool is small', () => {
+  const total = (workout: Workout) => {
+    const blocks = blockSeconds(workout)
+    return blocks.warmUp + blocks.main + blocks.coolDown
+  }
+  const fullBlocks = (role: BlockRole, count = 12) => many(count, { blockRoles: [role] })
+
+  it('drops the Equipment preference when too few Exercises use the ticked Equipment', () => {
+    const withDumbbells = exercise({ blockRoles: ['main'], equipment: ['dumbbells'] })
+    const library = [withDumbbells, ...many(10, { blockRoles: ['main'] })]
+
+    const workout = generate({ ...request, equipment: ['dumbbells'] }, library, seededRandom(1))
+
+    expect(workout.main.sets).toHaveLength(5)
+    expect(workout.main.sets.map((set) => set.exercise.id)).toContain(withDumbbells.id)
+  })
+
+  it.each([3, 4])(
+    'shrinks a 60-minute main Block to the %i eligible Exercises and adds Rounds to fit',
+    (count) => {
+      const library = [
+        ...fullBlocks('warm-up'),
+        ...many(count, { blockRoles: ['main'] }),
+        ...fullBlocks('cool-down'),
+      ]
+
+      const workout = generate({ ...request, minutes: 60 }, library, seededRandom(1))
+
+      expect(workout.main.sets).toHaveLength(count)
+      expect(total(workout)).toBeGreaterThanOrEqual(60 * 60 * 0.9)
+      expect(total(workout)).toBeLessThanOrEqual(60 * 60 * 1.1)
+    },
+  )
+
+  it('lets warm-up and cool-down Exercises repeat, never back to back, to fill their time', () => {
+    const library = [
+      ...many(1, { blockRoles: ['warm-up'] }),
+      ...many(6, { blockRoles: ['main'] }),
+      ...many(2, { blockRoles: ['cool-down'] }),
+    ]
+
+    const workout = generate({ ...request, minutes: 60 }, library, seededRandom(1))
+
+    // 8 min warm-up of 30 s Sets with 10 s change-overs: 12 Sets fit.
+    expect(workout.warmUp).toHaveLength(12)
+    // 7 min cool-down of 10 s change-over + 40 s holds: 8 Sets fit, alternating the two.
+    expect(workout.coolDown).toHaveLength(8)
+    const coolDownIds = workout.coolDown.map((set) => set.exercise.id)
+    for (let i = 1; i < coolDownIds.length; i++) expect(coolDownIds[i]).not.toBe(coolDownIds[i - 1])
+    expect(total(workout)).toBeGreaterThanOrEqual(60 * 60 * 0.9)
+    expect(total(workout)).toBeLessThanOrEqual(60 * 60 * 1.1)
+  })
+
+  it('still repeats a lone warm-up or cool-down Exercise rather than leaving time unused', () => {
+    const library = [
+      ...many(1, { blockRoles: ['warm-up'] }),
+      ...many(5, { blockRoles: ['main'] }),
+      ...many(1, { blockRoles: ['cool-down'] }),
+    ]
+
+    const workout = generate({ ...request, minutes: 15 }, library, seededRandom(1))
+
+    expect(workout.warmUp).toHaveLength(4)
+    expect(workout.coolDown).toHaveLength(2)
+  })
+
+  it.each([
+    ['an empty library', []],
+    ['a single Exercise', [exercise({ blockRoles: ['warm-up', 'main', 'cool-down'] })]],
+    ['only warm-up Exercises', many(3, { blockRoles: ['warm-up'] })],
+    ['one main Exercise', many(1, { blockRoles: ['main'] })],
+  ] as const)('never throws, even with %s', (_case, library) => {
+    for (const workoutType of WORKOUT_TYPES) {
+      for (const minutes of MINUTES) {
+        for (const difficulty of DIFFICULTIES) {
+          expect(() =>
+            generate(
+              { workoutType, minutes, difficulty, equipment: ['dumbbells'] },
+              library,
+              seededRandom(minutes),
+            ),
+          ).not.toThrow()
+        }
+      }
+    }
+  })
+})
+
+function primaries(sets: WorkoutSet[]): MuscleGroup[] {
+  return sets.map((set) => set.exercise.muscleGroups.primary[0])
+}
+
+/** Neighbouring pairs sharing a primary group, counting the last → first pair between Rounds. */
+function neighbourClashes(sets: WorkoutSet[]): number {
+  if (sets.length < 2) return 0
+  return sets.filter((set, i) => {
+    const next = sets[(i + 1) % sets.length]
+    return set.exercise.muscleGroups.primary.some((group) =>
+      next.exercise.muscleGroups.primary.includes(group),
+    )
+  }).length
+}
 
 function exerciseIds(workout: Workout): string[] {
   return [...workout.warmUp, ...workout.main.sets, ...workout.coolDown].map(

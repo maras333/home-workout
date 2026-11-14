@@ -1,5 +1,5 @@
 import { DIFFICULTIES } from '@/library'
-import type { BlockRole, Difficulty, Exercise } from '@/library'
+import type { BlockRole, Difficulty, Exercise, MuscleGroup, WorkoutType } from '@/library'
 import { shuffle } from './random'
 import { CHANGE_OVER_SECONDS, coolDownSeconds, mainSeconds, warmUpSeconds } from './workout'
 import type {
@@ -21,6 +21,16 @@ const TIME_SPLIT: Record<Minutes, { warmUp: number; main: number; coolDown: numb
 }
 
 const MAIN_EXERCISES: Record<Minutes, number> = { 15: 4, 30: 5, 45: 6, 60: 6 }
+
+/**
+ * The Muscle groups the main Block rotates through, slot by slot. Types without a list
+ * (core, cardio/HIIT, mobility) just avoid repeating groups where they can.
+ */
+const ROTATION: Partial<Record<WorkoutType, MuscleGroup[]>> = {
+  'full body': ['legs', 'glutes', 'chest', 'back', 'shoulders', 'core'],
+  'upper body': ['chest', 'back', 'shoulders', 'arms'],
+  'lower body': ['legs', 'glutes'],
+}
 
 /** Main-Block work and rest by Difficulty. */
 const MAIN_BY_DIFFICULTY: Record<
@@ -108,17 +118,116 @@ function toSet(exercise: Exercise, target: Target): WorkoutSet {
   return { exercise, target, perSide: exercise.perSide }
 }
 
-/** A single pass of as many Sets as fit in the budget. */
+const sharesGroup = (a: MuscleGroup[], b: MuscleGroup[]) => a.some((group) => b.includes(group))
+
+/**
+ * Picks the main Block's Exercises one slot at a time from a shuffled pool. Each slot takes the
+ * best candidate by these rules, strongest first, so ties fall to the shuffle:
+ * 1. reach "at least half on ticked Equipment" when the remaining slots only just allow it;
+ * 2. don't share a primary group with the previous pick (or, in the last slot, with the first,
+ *    since Rounds wrap around);
+ * 3. the exact requested Difficulty;
+ * 4. the rotation's group for this slot;
+ * 5. a primary group not used yet.
+ */
+function pickMain(pool: Exercise[], count: number, request: WorkoutRequest): Exercise[] {
+  const rotation = ROTATION[request.workoutType]
+  const equipmentWanted = request.equipment.length > 0 ? Math.ceil(count / 2) : 0
+  const picks: Exercise[] = []
+  let remaining = [...pool]
+
+  while (picks.length < count && remaining.length > 0) {
+    const slot = picks.length
+    const isLast = slot === Math.min(count, pool.length) - 1
+    const equipmentPicked = picks.filter((pick) => pick.equipment.length > 0).length
+    const mustUseEquipment = equipmentWanted - equipmentPicked >= count - slot
+    const previous = picks[slot - 1]?.muscleGroups.primary ?? []
+    const first = isLast && slot > 0 ? picks[0].muscleGroups.primary : []
+    const used = picks.flatMap((pick) => pick.muscleGroups.primary)
+    const target = rotation?.[slot % rotation.length]
+
+    const penalties = (exercise: Exercise): number[] => {
+      const groups = exercise.muscleGroups.primary
+      return [
+        mustUseEquipment && exercise.equipment.length === 0 ? 1 : 0,
+        sharesGroup(groups, previous) || sharesGroup(groups, first) ? 1 : 0,
+        exercise.difficulty === request.difficulty ? 0 : 1,
+        target === undefined || groups.includes(target) ? 0 : 1,
+        sharesGroup(groups, used) ? 1 : 0,
+      ]
+    }
+    const best = remaining.reduce((winner, candidate) => {
+      const a = penalties(candidate)
+      const b = penalties(winner)
+      const firstDifference = a.findIndex((value, i) => value !== b[i])
+      return firstDifference !== -1 && a[firstDifference] < b[firstDifference] ? candidate : winner
+    })
+    picks.push(best)
+    remaining = remaining.filter((exercise) => exercise !== best)
+  }
+  return picks
+}
+
+function clashes(order: Exercise[]): number {
+  if (order.length < 2) return 0
+  return order.filter((exercise, i) =>
+    sharesGroup(exercise.muscleGroups.primary, order[(i + 1) % order.length].muscleGroups.primary),
+  ).length
+}
+
+function permutations<T>(items: T[]): T[][] {
+  if (items.length <= 1) return [items]
+  return items.flatMap((item, i) =>
+    permutations([...items.slice(0, i), ...items.slice(i + 1)]).map((rest) => [item, ...rest]),
+  )
+}
+
+/**
+ * Reorders the picks so that as few neighbours as possible share a primary group, counting
+ * the last → first pair between Rounds. Keeps the picked order when it is already best.
+ */
+function orderToAvoidClashes(picks: Exercise[]): Exercise[] {
+  let best = picks
+  for (const order of permutations(picks)) {
+    if (clashes(best) === 0) break
+    if (clashes(order) < clashes(best)) best = order
+  }
+  return best
+}
+
+/**
+ * A single pass of as many Sets as fit in the budget, taking Exercises that work the main
+ * Block's Muscle groups first; Exercises repeat only when the pool runs out.
+ */
 function fillPass(
   pool: Exercise[],
+  mainGroups: MuscleGroup[],
   budgetSeconds: number,
   target: Target,
   blockSeconds: (sets: WorkoutSet[]) => number,
 ): WorkoutSet[] {
+  const works = (exercise: Exercise) =>
+    sharesGroup([...exercise.muscleGroups.primary, ...exercise.muscleGroups.secondary], mainGroups)
+  const ordered = [...pool.filter(works), ...pool.filter((exercise) => !works(exercise))]
   const sets: WorkoutSet[] = []
-  for (const exercise of pool) {
+  const tryAdd = (exercise: Exercise) => {
     const set = toSet(exercise, target)
-    if (blockSeconds([...sets, set]) <= budgetSeconds) sets.push(set)
+    if (blockSeconds([...sets, set]) > budgetSeconds) return false
+    sets.push(set)
+    return true
+  }
+  for (const exercise of ordered) tryAdd(exercise)
+
+  // Fallback: when the pool runs out before the time does, repeat Exercises, never back to back
+  // unless there is only one.
+  let added = sets.length > 0
+  while (added) {
+    added = false
+    for (const exercise of ordered) {
+      const last = sets[sets.length - 1].exercise
+      if (exercise === last && ordered.length > 1) continue
+      if (tryAdd(exercise)) added = true
+    }
   }
   return sets
 }
@@ -164,17 +273,20 @@ export function generate(
     )
 
   const rules = mainRules(request)
-  const mainSets = pool('main')
-    .slice(0, MAIN_EXERCISES[request.minutes])
-    .map((exercise) => toSet(exercise, rules.target(exercise)))
+  const mainSets = orderToAvoidClashes(
+    pickMain(pool('main'), MAIN_EXERCISES[request.minutes], request),
+  ).map((exercise) => toSet(exercise, rules.target(exercise)))
+  const mainGroups = mainSets.flatMap((set) => set.exercise.muscleGroups.primary)
   const warmUp = fillPass(
     pool('warm-up'),
+    mainGroups,
     split.warmUp * 60,
     { measure: 'time', seconds: WARM_UP_SECONDS },
     warmUpSeconds,
   )
   const coolDown = fillPass(
     pool('cool-down'),
+    mainGroups,
     split.coolDown * 60,
     { measure: 'time', seconds: HOLD_SECONDS },
     coolDownSeconds,
