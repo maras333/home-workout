@@ -1,0 +1,8 @@
+# Only what the build needs goes to Vercel
+.claude
+.scratch
+docs
+node_modules
+dist
+.env*
+.vercel
