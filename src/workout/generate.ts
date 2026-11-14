@@ -123,13 +123,13 @@ const sharesGroup = (a: MuscleGroup[], b: MuscleGroup[]) => a.some((group) => b.
 /**
  * Picks the main Block's Exercises one slot at a time from a shuffled pool. Each slot takes the
  * best candidate by these rules, strongest first, so ties fall to the shuffle:
- * 0. not in the previous Workout's main Block, so "Generate another" changes something;
  * 1. reach "at least half on ticked Equipment" when the remaining slots only just allow it;
- * 2. don't share a primary group with the previous pick (or, in the last slot, with the first,
+ * 2. not in the previous Workout's main Block, so "Generate another" changes something;
+ * 3. don't share a primary group with the previous pick (or, in the last slot, with the first,
  *    since Rounds wrap around);
- * 3. the exact requested Difficulty;
- * 4. the rotation's group for this slot;
- * 5. a primary group not used yet.
+ * 4. the exact requested Difficulty;
+ * 5. the rotation's group for this slot;
+ * 6. a primary group not used yet.
  * Equipment ranks above neighbours because this only decides which Exercises go in;
  * `orderToAvoidClashes` then decides their order.
  */
@@ -157,8 +157,8 @@ function pickMain(
     const penalties = (exercise: Exercise): number[] => {
       const groups = exercise.muscleGroups.primary
       return [
-        previousIds.has(exercise.id) ? 1 : 0,
         mustUseEquipment && exercise.equipment.length === 0 ? 1 : 0,
+        previousIds.has(exercise.id) ? 1 : 0,
         sharesGroup(groups, previous) || sharesGroup(groups, firstPickGroups) ? 1 : 0,
         exercise.difficulty === request.difficulty ? 0 : 1,
         rotationGroup === undefined || groups.includes(rotationGroup) ? 0 : 1,

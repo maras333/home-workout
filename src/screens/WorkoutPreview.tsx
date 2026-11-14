@@ -21,11 +21,11 @@ import {
 function BlockSection({
   title,
   sets,
-  onOpen,
+  onOpenExercise,
 }: {
   title: string
   sets: WorkoutSet[]
-  onOpen: (exercise: Exercise) => void
+  onOpenExercise: (exercise: Exercise) => void
 }) {
   const headingId = useId()
   return (
@@ -38,7 +38,7 @@ function BlockSection({
           <li key={`${index}-${set.exercise.id}`}>
             <button
               type="button"
-              onClick={() => onOpen(set.exercise)}
+              onClick={() => onOpenExercise(set.exercise)}
               className="flex w-full cursor-pointer items-center gap-4 p-2 text-left outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50"
             >
               <img
@@ -61,7 +61,7 @@ function BlockSection({
 
 export function WorkoutPreview() {
   const [workout, setWorkout] = useState(loadWorkout)
-  const [detail, setDetail] = useState<Exercise | null>(null)
+  const [detailExercise, setDetailExercise] = useState<Exercise | null>(null)
   const navigate = useNavigate()
   if (!workout) return <Navigate to="/" replace />
 
@@ -103,14 +103,14 @@ export function WorkoutPreview() {
           Exercises
         </p>
       </header>
-      <BlockSection title="Warm-up" sets={workout.warmUp} onOpen={setDetail} />
+      <BlockSection title="Warm-up" sets={workout.warmUp} onOpenExercise={setDetailExercise} />
       <BlockSection
         title={`Main · ${roundsText(workout.main)}`}
         sets={workout.main.sets}
-        onOpen={setDetail}
+        onOpenExercise={setDetailExercise}
       />
-      <BlockSection title="Cool-down" sets={workout.coolDown} onOpen={setDetail} />
-      <ExerciseDetailDialog exercise={detail} onClose={() => setDetail(null)} />
+      <BlockSection title="Cool-down" sets={workout.coolDown} onOpenExercise={setDetailExercise} />
+      <ExerciseDetailDialog exercise={detailExercise} onClose={() => setDetailExercise(null)} />
     </div>
   )
 }

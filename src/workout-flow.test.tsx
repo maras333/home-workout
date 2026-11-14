@@ -18,10 +18,11 @@ function workoutList() {
   return screen.getAllByRole('listitem').map((row) => row.textContent)
 }
 
-function mainRows() {
+/** The main Block's Exercise names, read from the row GIFs' alt text. */
+function mainExercises() {
   return within(screen.getByRole('region', { name: /^Main/ }))
-    .getAllByRole('listitem')
-    .map((row) => row.textContent)
+    .getAllByRole('img')
+    .map((gif) => gif.getAttribute('alt'))
 }
 
 beforeEach(() => {
@@ -139,14 +140,14 @@ describe('Workout preview', () => {
     const user = userEvent.setup()
     const { unmount } = renderAt('/')
     await user.click(screen.getByRole('button', { name: 'Generate' }))
-    const before = mainRows()
+    const before = mainExercises()
 
     await user.click(screen.getByRole('button', { name: 'Generate another' }))
 
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
-    const after = mainRows()
+    const after = mainExercises()
     expect(after.length).toBeGreaterThan(0)
-    expect(after.filter((row) => before.includes(row))).toEqual([])
+    expect(after.filter((name) => before.includes(name))).toEqual([])
     expect(screen.getByText('Full body · 30 min · Intermediate · Bodyweight')).toBeInTheDocument()
 
     const shown = workoutList()
@@ -200,6 +201,7 @@ describe('Workout preview', () => {
     ).toEqual(exercise.steps)
     expect(dialog).toHaveTextContent(exercise.trains)
     expect(exercise.trains).toMatch(/^Trains: /)
+    // Spelled out here rather than calling equipmentText, as an independent check.
     const equipment =
       exercise.equipment.length > 0
         ? exercise.equipment.map(equipmentLabel).join(', ')

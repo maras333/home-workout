@@ -302,6 +302,24 @@ describe('generate: another Workout', () => {
     }
   })
 
+  it('still uses ticked Equipment in at least half the main Block when steering away', () => {
+    const library = [
+      ...many(10, { blockRoles: ['warm-up'] }),
+      ...many(10, { blockRoles: ['main'] }),
+      ...many(4, { blockRoles: ['main'], equipment: ['dumbbells'] }),
+      ...many(10, { blockRoles: ['cool-down'] }),
+    ]
+    const withDumbbells = { ...request, equipment: ['dumbbells' as const] }
+
+    for (const seed of seeds) {
+      const previous = fromStorage(generate(withDumbbells, library, seededRandom(seed)))
+      const next = generate(withDumbbells, library, seededRandom(seed + 100), previous)
+
+      const withEquipment = next.main.sets.filter((set) => set.exercise.equipment.length > 0)
+      expect(withEquipment.length).toBeGreaterThanOrEqual(3)
+    }
+  })
+
   it('reuses as few previous main-Block Exercises as it must when the pool is small', () => {
     const library = [
       ...many(10, { blockRoles: ['warm-up'] }),
