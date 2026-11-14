@@ -11,6 +11,9 @@ import {
   MUSCLE_GROUPS,
   WORKOUT_TYPES,
   library,
+  type BlockRole,
+  type Difficulty,
+  type WorkoutType,
 } from '@/library'
 
 const publicDir = path.resolve(__dirname, '../../public')
@@ -95,17 +98,31 @@ describe('Exercise library data check', () => {
     expect(calfRaise?.trains).toBe('Trains: legs')
   })
 
-  it.each(WORKOUT_TYPES.flatMap((type) => BLOCK_ROLES.map((role) => [type, role] as const)))(
-    'can fill the %s %s Block with Beginner bodyweight Exercises',
-    (type, role) => {
-      const pool = library.filter(
-        (exercise) =>
-          exercise.workoutTypes.includes(type) &&
-          exercise.blockRoles.includes(role) &&
-          exercise.equipment.length === 0 &&
-          exercise.difficulty === 'beginner',
-      )
-      expect(pool.length).toBeGreaterThanOrEqual(role === 'main' ? 3 : 1)
+  // Eligible at a Difficulty means tagged at or below it, as in the spec's
+  // eligibility rule, so Beginner is the tightest case.
+  function bodyweightPool(type: WorkoutType, role: BlockRole, difficulty: Difficulty) {
+    const limit = DIFFICULTIES.indexOf(difficulty)
+    return library.filter(
+      (exercise) =>
+        exercise.workoutTypes.includes(type) &&
+        exercise.blockRoles.includes(role) &&
+        exercise.equipment.length === 0 &&
+        DIFFICULTIES.indexOf(exercise.difficulty) <= limit,
+    )
+  }
+
+  it.each(WORKOUT_TYPES.flatMap((type) => DIFFICULTIES.map((level) => [type, level] as const)))(
+    'has at least 6 bodyweight-only main-Block Exercises for %s at %s (Difficulty at or below)',
+    (type, difficulty) => {
+      expect(bodyweightPool(type, 'main', difficulty).length).toBeGreaterThanOrEqual(6)
     },
   )
+
+  it.each(
+    WORKOUT_TYPES.flatMap((type) =>
+      (['warm-up', 'cool-down'] as const).map((role) => [type, role] as const),
+    ),
+  )('can fill the %s %s Block with Beginner bodyweight Exercises', (type, role) => {
+    expect(bodyweightPool(type, role, 'beginner').length).toBeGreaterThanOrEqual(1)
+  })
 })
