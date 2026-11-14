@@ -18,6 +18,21 @@ function workoutList() {
   return screen.getAllByRole('listitem').map((row) => row.textContent)
 }
 
+/** The button that fills an Exercise row and opens its detail dialog (the other is Swap). */
+function rowButton(row: HTMLElement) {
+  const [button] = within(row)
+    .getAllByRole('button')
+    .filter((candidate) => !/^Swap/.test(candidate.getAttribute('aria-label') ?? ''))
+  return button
+}
+
+/** Exercise names in a Block, read from the row GIFs' alt text. */
+function blockExercises(name: RegExp) {
+  return within(screen.getByRole('region', { name }))
+    .getAllByRole('img')
+    .map((gif) => gif.getAttribute('alt'))
+}
+
 /** The main Block's Exercise names, read from the row GIFs' alt text. */
 function mainExercises() {
   return within(screen.getByRole('region', { name: /^Main/ }))
@@ -111,11 +126,11 @@ describe('Workout preview', () => {
           'src',
           expect.stringMatching(/^\/exercisedb\/\w+\.gif$/),
         )
-        expect(row).toHaveTextContent(/\d+ (reps|s)( per side)?$/)
+        expect(rowButton(row)).toHaveTextContent(/\d+ (reps|s)( per side)?$/)
       }
     }
     for (const row of within(warmUp).getAllByRole('listitem')) {
-      expect(row).toHaveTextContent(/30 s( per side)?$/)
+      expect(rowButton(row)).toHaveTextContent(/30 s( per side)?$/)
     }
     expect(screen.queryByText(/rest|change-over/i)).not.toBeInTheDocument()
 
@@ -190,7 +205,7 @@ describe('Workout preview', () => {
     const exercise = library.find((candidate) => candidate.name === name)
     if (!exercise) throw new Error(`No Exercise named ${name}`)
 
-    await user.click(within(row).getByRole('button'))
+    await user.click(rowButton(row))
 
     const dialog = screen.getByRole('dialog', { name })
     expect(within(dialog).getByRole('img')).toHaveAttribute('src', exercise.gifUrl)
@@ -211,6 +226,70 @@ describe('Workout preview', () => {
 
     await user.click(within(dialog).getByRole('button', { name: 'Close' }))
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+
+  it('swaps one Exercise from the preview, keeping the rest, and saves the result', async () => {
+    const user = userEvent.setup()
+    const { unmount } = renderAt('/')
+    await user.click(screen.getByRole('button', { name: 'Generate' }))
+    const before = mainExercises()
+    const warmUp = blockExercises(/^Warm-up/)
+    const coolDown = blockExercises(/^Cool-down/)
+
+    await user.click(screen.getByRole('button', { name: `Swap ${before[1]}` }))
+
+    const once = mainExercises()
+    expect(once[1]).not.toBe(before[1])
+    expect(before).not.toContain(once[1])
+    expect(once.filter((_, i) => i !== 1)).toEqual(before.filter((_, i) => i !== 1))
+    expect(blockExercises(/^Warm-up/)).toEqual(warmUp)
+    expect(blockExercises(/^Cool-down/)).toEqual(coolDown)
+
+    await user.click(screen.getByRole('button', { name: `Swap ${once[1]}` }))
+    const twice = mainExercises()
+    expect(twice[1]).not.toBe(once[1])
+
+    const shown = workoutList()
+    unmount()
+    renderAt('/workout')
+    expect(workoutList()).toEqual(shown)
+  })
+
+  it('disables Swap when no other Exercise fits the Block', async () => {
+    const user = userEvent.setup()
+    const { unmount } = renderAt('/')
+    await user.click(screen.getByRole('radio', { name: 'Core' }))
+    await user.click(screen.getByRole('radio', { name: 'Beginner' }))
+    await user.click(screen.getByRole('button', { name: 'Generate' }))
+    unmount()
+    // Put every Exercise that fits this main Block into it, so none is left to swap in.
+    const saved = JSON.parse(localStorage.getItem('home-workout:current-workout') ?? '')
+    const fitting = library.filter(
+      (exercise) =>
+        exercise.workoutTypes.includes('core') &&
+        exercise.blockRoles.includes('main') &&
+        exercise.equipment.length === 0 &&
+        exercise.difficulty === 'beginner',
+    )
+    const sets = fitting.map((exercise) => ({
+      exercise,
+      target: { measure: 'time', seconds: 30 },
+      perSide: exercise.perSide,
+    }))
+    saved.main = { ...saved.main, sets, rounds: 1, lastRoundSets: sets.length }
+    localStorage.setItem('home-workout:current-workout', JSON.stringify(saved))
+
+    renderAt('/workout')
+
+    const main = screen.getByRole('region', { name: /^Main/ })
+    for (const button of within(main).getAllByRole('button', { name: /^Swap / })) {
+      expect(button).toBeDisabled()
+    }
+    const warmUpSwaps = within(screen.getByRole('region', { name: 'Warm-up' })).getAllByRole(
+      'button',
+      { name: /^Swap / },
+    )
+    expect(warmUpSwaps[0]).toBeEnabled()
   })
 
   it.each([

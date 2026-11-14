@@ -70,13 +70,13 @@ const MAIN_BY_DIFFICULTY: Record<
   },
 }
 
-const WARM_UP_SECONDS = 30
-const HOLD_SECONDS = 40
+export const WARM_UP_SECONDS = 30
+export const HOLD_SECONDS = 40
 
 type MainRest = Pick<MainBlock, 'restSeconds' | 'roundRestSeconds'>
 
 /** How the Request's workout type and Difficulty shape the main Block's Sets and rest. */
-function mainRules(request: WorkoutRequest): {
+export function mainRules(request: WorkoutRequest): {
   target: (exercise: Exercise) => Target
   rest: MainRest
 } {
@@ -105,7 +105,7 @@ function mainRules(request: WorkoutRequest): {
   }
 }
 
-function isEligible(exercise: Exercise, request: WorkoutRequest, role: BlockRole): boolean {
+export function isEligible(exercise: Exercise, request: WorkoutRequest, role: BlockRole): boolean {
   return (
     exercise.workoutTypes.includes(request.workoutType) &&
     exercise.blockRoles.includes(role) &&
@@ -114,7 +114,7 @@ function isEligible(exercise: Exercise, request: WorkoutRequest, role: BlockRole
   )
 }
 
-function toSet(exercise: Exercise, target: Target): WorkoutSet {
+export function toSet(exercise: Exercise, target: Target): WorkoutSet {
   return { exercise, target, perSide: exercise.perSide }
 }
 
@@ -249,7 +249,7 @@ function fillPass(
  * Repeats the Sets in Rounds, stopping after the Set whose end lands nearest the budget.
  * The first Round is always complete.
  */
-function fitRounds(sets: WorkoutSet[], rest: MainRest, budgetSeconds: number): MainBlock {
+export function fitRounds(sets: WorkoutSet[], rest: MainRest, budgetSeconds: number): MainBlock {
   let best: MainBlock = { sets, rounds: 1, lastRoundSets: sets.length, ...rest }
   if (sets.length === 0) return { ...best, rounds: 0, lastRoundSets: 0 }
   let bestDistance = Math.abs(mainSeconds(best) - budgetSeconds)
@@ -265,6 +265,15 @@ function fitRounds(sets: WorkoutSet[], rest: MainRest, budgetSeconds: number): M
       if (seconds >= budgetSeconds) return best
     }
   }
+}
+
+/** The main Block's time: whatever the warm-up and cool-down leave of the chosen time. */
+export function mainBudget(
+  request: WorkoutRequest,
+  warmUp: WorkoutSet[],
+  coolDown: WorkoutSet[],
+): number {
+  return request.minutes * 60 - warmUpSeconds(warmUp) - coolDownSeconds(coolDown)
 }
 
 /**
@@ -309,8 +318,7 @@ export function generate(
     coolDownSeconds,
   )
 
-  const mainBudget = request.minutes * 60 - warmUpSeconds(warmUp) - coolDownSeconds(coolDown)
-  const main = fitRounds(mainSets, rules.rest, mainBudget)
+  const main = fitRounds(mainSets, rules.rest, mainBudget(request, warmUp, coolDown))
 
   return { request, warmUp, main, coolDown }
 }

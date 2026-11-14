@@ -1,34 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { DIFFICULTIES, WORKOUT_TYPES } from '@/library'
 import type { BlockRole, Exercise, MuscleGroup } from '@/library'
+import { exercise, many } from '@/test/exercises'
 import { MINUTES, generate, plannedSeconds, seededRandom, setSeconds } from '@/workout'
 import type { Minutes, Workout, WorkoutRequest, WorkoutSet } from '@/workout'
-
-let nextId = 0
-
-/** A hand-built Exercise; by default a bodyweight, Beginner, full-body main-Block timed Exercise. */
-function exercise(overrides: Partial<Exercise> = {}): Exercise {
-  const id = `ex${nextId++}`
-  return {
-    id,
-    name: id,
-    steps: ['Do it.'],
-    trains: 'Trains: legs',
-    gifUrl: `/exercisedb/${id}.gif`,
-    muscleGroups: { primary: ['legs'], secondary: [] },
-    equipment: [],
-    difficulty: 'beginner',
-    workoutTypes: ['full body'],
-    blockRoles: ['main'],
-    measure: 'time',
-    perSide: false,
-    ...overrides,
-  }
-}
-
-function many(count: number, overrides: Partial<Exercise> = {}): Exercise[] {
-  return Array.from({ length: count }, () => exercise(overrides))
-}
 
 const request: WorkoutRequest = {
   workoutType: 'full body',

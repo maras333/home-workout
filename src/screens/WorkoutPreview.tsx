@@ -1,9 +1,11 @@
 import { useId, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router'
+import { Shuffle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ExerciseDetailDialog } from '@/components/ExerciseDetailDialog'
 import { library, type Exercise } from '@/library'
 import {
+  canSwap,
   durationText,
   exerciseCount,
   generate,
@@ -13,7 +15,9 @@ import {
   roundsText,
   saveRequest,
   saveWorkout,
+  swap,
   targetText,
+  type SetPosition,
   type Workout,
   type WorkoutSet,
 } from '@/workout'
@@ -22,10 +26,14 @@ function BlockSection({
   title,
   sets,
   onOpenExercise,
+  canSwapAt,
+  onSwap,
 }: {
   title: string
   sets: WorkoutSet[]
   onOpenExercise: (exercise: Exercise) => void
+  canSwapAt: (index: number) => boolean
+  onSwap: (index: number) => void
 }) {
   const headingId = useId()
   return (
@@ -35,11 +43,11 @@ function BlockSection({
       </h2>
       <ul className="flex flex-col divide-y rounded-lg border">
         {sets.map((set, index) => (
-          <li key={`${index}-${set.exercise.id}`}>
+          <li key={`${index}-${set.exercise.id}`} className="flex items-center gap-2 pr-2">
             <button
               type="button"
               onClick={() => onOpenExercise(set.exercise)}
-              className="flex w-full cursor-pointer items-center gap-4 p-2 text-left outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50"
+              className="flex flex-1 cursor-pointer items-center gap-4 p-2 text-left outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50"
             >
               <img
                 src={set.exercise.gifUrl}
@@ -52,6 +60,15 @@ function BlockSection({
               <span className="flex-1 capitalize">{set.exercise.name}</span>
               <span className="text-muted-foreground">{targetText(set)}</span>
             </button>
+            <Button
+              variant="outline"
+              aria-label={`Swap ${set.exercise.name}`}
+              disabled={!canSwapAt(index)}
+              onClick={() => onSwap(index)}
+            >
+              <Shuffle aria-hidden="true" />
+              Swap
+            </Button>
           </li>
         ))}
       </ul>
@@ -70,6 +87,20 @@ export function WorkoutPreview() {
     saveWorkout(next)
     setWorkout(next)
   }
+
+  function swapAt(current: Workout, position: SetPosition) {
+    const next = swap(current, position, library, Math.random)
+    if (!next) return
+    saveWorkout(next)
+    setWorkout(next)
+  }
+
+  /** The props that let a Block's rows open the detail dialog and Swap. */
+  const rowActions = (current: Workout, block: SetPosition['block']) => ({
+    onOpenExercise: setDetailExercise,
+    canSwapAt: (index: number) => canSwap(current, { block, index }, library),
+    onSwap: (index: number) => swapAt(current, { block, index }),
+  })
 
   function changeRequest(current: Workout) {
     // The form prefills from the saved Request, so make that this Workout's Request.
@@ -103,13 +134,17 @@ export function WorkoutPreview() {
           Exercises
         </p>
       </header>
-      <BlockSection title="Warm-up" sets={workout.warmUp} onOpenExercise={setDetailExercise} />
+      <BlockSection title="Warm-up" sets={workout.warmUp} {...rowActions(workout, 'warmUp')} />
       <BlockSection
         title={`Main · ${roundsText(workout.main)}`}
         sets={workout.main.sets}
-        onOpenExercise={setDetailExercise}
+        {...rowActions(workout, 'main')}
       />
-      <BlockSection title="Cool-down" sets={workout.coolDown} onOpenExercise={setDetailExercise} />
+      <BlockSection
+        title="Cool-down"
+        sets={workout.coolDown}
+        {...rowActions(workout, 'coolDown')}
+      />
       <ExerciseDetailDialog exercise={detailExercise} onClose={() => setDetailExercise(null)} />
     </div>
   )
