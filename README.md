@@ -4,9 +4,11 @@ A virtual training partner for working out at home. You say what kind of Workout
 
 A hobby project for the author and a few friends: no accounts, no payments, no public launch.
 
+**Live:** https://home-workout-mauve.vercel.app (deployed automatically from `main` by Vercel).
+
 ## Status
 
-**Planning.** There is no app code on `main` yet. The MVP is being planned decision by decision before any code is written.
+**Building.** Planning is done: the MVP spec and its build tickets are in `.scratch/`. The app shell is in place; features land ticket by ticket.
 
 - [`.scratch/home-workout-mvp/map.md`](.scratch/home-workout-mvp/map.md) is the planning map: the goal, decisions so far, and what's still open.
 - [`.scratch/home-workout-mvp/issues/`](.scratch/home-workout-mvp/issues/) holds one file per decision ticket, with the question and its answer.
@@ -20,13 +22,13 @@ A hobby project for the author and a few friends: no accounts, no payments, no p
 
 Everything runs in the browser on a laptop. Anything saved stays in the browser.
 
-## Planned stack
+## Stack
 
 Vite, React, TypeScript, React Router, Tailwind CSS v4 with shadcn/ui, and Vitest, deployed as a static site on Vercel. See [Choose the stack on Vercel](.scratch/home-workout-mvp/issues/05-choose-stack-on-vercel.md).
 
 ## Branches
 
-- `main`: planning documents (and later the app).
+- `main`: the app and its planning documents.
 - `research/exercise-dataset`: cited research behind the choice of exercise dataset. Never merged.
 - `prototype/follow-along`: a throwaway prototype comparing three Follow-along layouts. Run it with `cd prototype-app && npm install && npm run dev`, then open `/prototype/follow-along?variant=A`. Never merged.
 
@@ -37,3 +39,16 @@ Exercise data and GIFs come from **ExerciseDB v1**, licensed AGPL-3.0, vendored 
 ## Licence
 
 Licensed under the **GNU Affero General Public License v3.0 (AGPL-3.0)**, the same licence as the ExerciseDB data and GIFs it bundles. See [LICENSE](LICENSE), and [Choose the app's licence](.scratch/home-workout-mvp/issues/07-choose-app-licence.md) for why.
+
+## Running locally
+
+Requires Node 24.
+
+```bash
+npm install
+npm run dev        # http://localhost:5173
+npm test           # Vitest + React Testing Library
+npm run typecheck
+npm run lint
+npm run build      # static build in dist/
+```
