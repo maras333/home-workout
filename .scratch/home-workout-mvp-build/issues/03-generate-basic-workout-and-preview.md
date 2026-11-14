@@ -10,7 +10,7 @@ Spec: [Home Workout MVP](../../home-workout-mvp/spec.md), sections "Workout mode
 
 - [x] Form: six workout-type cards (default full body), time presets 15/30/45/60 (default 30), Difficulty with its one-line hints (default Intermediate), four Equipment checkboxes (all unchecked), Generate
 - [x] The last Workout Request is saved in browser storage and prefills the form; a missing or corrupt value falls back to the defaults
-- [ ] `generate(request, library, random, previous?)` is a pure function with an injected random source; the same seed gives the same Workout
+- [x] `generate(request, library, random, previous?)` is a pure function with an injected random source; the same seed gives the same Workout
 - [x] Time split per preset (15 → 3/10/2, 30 → 5/21/4, 45 → 6/34/5, 60 → 8/45/7) and total planned length within ±10% of the chosen time
 - [x] Eligibility: workout type, Block role, all needed Equipment ticked, Difficulty at or below the requested one; no repeats within a Block
 - [x] Main Block: 4/5/6/6 Exercises per preset, repeated in Rounds, last Round may stop part-way after the Set nearest the budget; warm-up and cool-down are a single pass
@@ -32,3 +32,5 @@ Done in `ca15641` and the review-fix commit after it. The one open box is the `p
   - The first main Round is always complete.
 - **Fitting:** the main Block's Exercises are picked first. Warm-up and cool-down are then filled to their minutes. The main Block's Rounds fit the remaining time, so the total stays within ±10%.
 - **For ticket 06:** `fitRounds` in `src/workout/generate.ts` is the piece Swap needs for refitting. Extract it then.
+
+Ticket 05 added `previous?` and the steering (`548ff73`, `dd34111`), so the last box is ticked.
