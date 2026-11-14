@@ -78,14 +78,19 @@ describe('Exercise library data check', () => {
     },
   )
 
-  it('derives the "Trains: …" text from Muscle groups', () => {
+  it('takes the name and steps from the dataset record', () => {
     const pushUp = library.find((exercise) => exercise.id === 'I4hDWkc')
-    const calfRaise = library.find((exercise) => exercise.id === 'bJYHBIN')
 
     expect(pushUp?.name).toBe('push-up')
     expect(pushUp?.steps[0]).toBe(
       'Start in a high plank position with your hands slightly wider than shoulder-width apart and your feet together.',
     )
+  })
+
+  it('derives the "Trains: …" text from Muscle groups', () => {
+    const pushUp = library.find((exercise) => exercise.id === 'I4hDWkc')
+    const calfRaise = library.find((exercise) => exercise.id === 'bJYHBIN')
+
     expect(pushUp?.trains).toBe('Trains: chest (also arms, shoulders, core)')
     expect(calfRaise?.trains).toBe('Trains: legs')
   })

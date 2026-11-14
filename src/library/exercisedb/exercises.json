@@ -125,6 +125,31 @@
     ]
   },
   {
+    "exerciseId": "v3vLFW0",
+    "name": "close-grip push-up (on knees)",
+    "gifUrl": "https://static.exercisedb.dev/media/v3vLFW0.gif",
+    "targetMuscles": [
+      "triceps"
+    ],
+    "bodyParts": [
+      "upper arms"
+    ],
+    "equipments": [
+      "body weight"
+    ],
+    "secondaryMuscles": [
+      "chest",
+      "shoulders"
+    ],
+    "instructions": [
+      "Step:1 Start by getting on your hands and knees, with your hands shoulder-width apart and your knees hip-width apart.",
+      "Step:2 Lower your upper body towards the ground by bending your elbows, keeping them close to your sides.",
+      "Step:3 Pause for a moment when your chest is just above the ground.",
+      "Step:4 Push through your palms to straighten your arms and return to the starting position.",
+      "Step:5 Repeat for the desired number of repetitions."
+    ]
+  },
+  {
     "exerciseId": "BJ0Hz5L",
     "name": "dumbbell bent over row",
     "gifUrl": "https://static.exercisedb.dev/media/BJ0Hz5L.gif",
@@ -307,33 +332,6 @@
       "Step:4 Slowly lower your right arm and left leg towards the ground, keeping them straight and hovering just above the floor.",
       "Step:5 Pause for a moment, then return to the starting position.",
       "Step:6 Repeat the movement with your left arm and right leg.",
-      "Step:7 Continue alternating sides for the desired number of repetitions."
-    ]
-  },
-  {
-    "exerciseId": "2jl9K55",
-    "name": "spine twist",
-    "gifUrl": "https://static.exercisedb.dev/media/2jl9K55.gif",
-    "targetMuscles": [
-      "abs"
-    ],
-    "bodyParts": [
-      "waist"
-    ],
-    "equipments": [
-      "body weight"
-    ],
-    "secondaryMuscles": [
-      "obliques",
-      "lower back"
-    ],
-    "instructions": [
-      "Step:1 Sit on the ground with your legs extended in front of you.",
-      "Step:2 Bend your knees and place your feet flat on the ground, hip-width apart.",
-      "Step:3 Place your hands behind your head with your elbows pointing outwards.",
-      "Step:4 Engage your abs and slowly twist your torso to the right, bringing your right elbow towards your left knee.",
-      "Step:5 Pause for a moment at the end of the twist, then slowly return to the starting position.",
-      "Step:6 Repeat the twist to the left side, bringing your left elbow towards your right knee.",
       "Step:7 Continue alternating sides for the desired number of repetitions."
     ]
   },

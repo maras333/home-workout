@@ -11,16 +11,9 @@
 //   has no tag for it.
 // - Difficulty is hand-tagged; the dataset has none.
 
-import type { ExerciseTags, WorkoutType } from './types.ts'
+import { WORKOUT_TYPES, type ExerciseTags } from './types.ts'
 
-const EVERY_TYPE: WorkoutType[] = [
-  'full body',
-  'upper body',
-  'lower body',
-  'core',
-  'cardio/HIIT',
-  'mobility/stretching',
-]
+const EVERY_TYPE = [...WORKOUT_TYPES]
 
 export const curation: Record<string, ExerciseTags> = {
   // --- Warm-up ---
@@ -40,16 +33,6 @@ export const curation: Record<string, ExerciseTags> = {
     equipment: [],
     difficulty: 'beginner',
     workoutTypes: EVERY_TYPE,
-    blockRoles: ['warm-up'],
-    measure: 'time',
-    perSide: false,
-  },
-  '2jl9K55': {
-    // spine twist
-    muscleGroups: { primary: ['core'], secondary: [] },
-    equipment: [],
-    difficulty: 'beginner',
-    workoutTypes: ['full body', 'core', 'mobility/stretching'],
     blockRoles: ['warm-up'],
     measure: 'time',
     perSide: false,
@@ -156,6 +139,16 @@ export const curation: Record<string, ExerciseTags> = {
     measure: 'reps',
     perSide: false,
   },
+  v3vLFW0: {
+    // close-grip push-up (on knees)
+    muscleGroups: { primary: ['arms'], secondary: ['chest', 'shoulders'] },
+    equipment: [],
+    difficulty: 'beginner',
+    workoutTypes: ['full body', 'upper body'],
+    blockRoles: ['main'],
+    measure: 'reps',
+    perSide: false,
+  },
   wbUYILZ: {
     // elbow lift - reverse push-up
     muscleGroups: { primary: ['back'], secondary: ['arms', 'shoulders'] },
@@ -200,7 +193,7 @@ export const curation: Record<string, ExerciseTags> = {
   },
   kMzUs9Y: {
     // forward lunge (male), alternating legs
-    muscleGroups: { primary: ['legs'], secondary: ['glutes'] },
+    muscleGroups: { primary: ['glutes'], secondary: ['legs'] },
     equipment: [],
     difficulty: 'beginner',
     workoutTypes: ['full body', 'lower body'],
