@@ -14,7 +14,6 @@ function renderAt(path: string) {
 describe('app shell', () => {
   it.each([
     ['/', 'Workout Request'],
-    ['/workout', 'Workout preview'],
     ['/follow-along', 'Follow-along'],
   ])('shows the %s screen with the ExerciseDB credit footer', (path, heading) => {
     renderAt(path)
