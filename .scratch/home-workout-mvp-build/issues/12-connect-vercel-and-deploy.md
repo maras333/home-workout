@@ -8,8 +8,8 @@ Spec: [Home Workout MVP](../../home-workout-mvp/spec.md), section "Stack and hos
 
 **Status:** ready-for-human
 
-- [ ] The human imports the GitHub repo into Vercel (Vite preset, no server functions)
-- [ ] Pushes to `main` deploy automatically
-- [ ] Reloading any route on the deployment works (catch-all rewrite)
-- [ ] The credit footer and source link are visible on the deployment
-- [ ] The deployment URL is recorded in the README
+- [x] The human imports the GitHub repo into Vercel (Vite preset, no server functions)
+- [x] Pushes to `main` deploy automatically
+- [x] Reloading any route on the deployment works (catch-all rewrite)
+- [x] The credit footer and source link are visible on the deployment
+- [x] The deployment URL is recorded in the README
