@@ -1,7 +1,7 @@
 import type { MainBlock, Workout, WorkoutSet } from './types'
 
 /** For time fitting and Follow-along, a rep lasts 3 s. */
-export const REP_SECONDS = 3
+const REP_SECONDS = 3
 /** The pause between Exercises outside main-Block Rounds, and between Blocks. */
 export const CHANGE_OVER_SECONDS = 10
 
@@ -45,4 +45,9 @@ export function plannedSeconds(workout: Workout): number {
   return (
     warmUpSeconds(workout.warmUp) + mainSeconds(workout.main) + coolDownSeconds(workout.coolDown)
   )
+}
+
+/** How many Exercises the Workout holds; the main Block counts each Exercise once. */
+export function exerciseCount(workout: Workout): number {
+  return workout.warmUp.length + workout.main.sets.length + workout.coolDown.length
 }

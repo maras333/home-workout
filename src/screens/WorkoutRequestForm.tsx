@@ -2,9 +2,18 @@ import { useId, useState, type FormEvent, type ReactNode } from 'react'
 import { useNavigate } from 'react-router'
 import { Button } from '@/components/ui/button'
 import { DIFFICULTIES, EQUIPMENT, WORKOUT_TYPES, library } from '@/library'
-import { MINUTES, generate, type WorkoutRequest } from '@/workout'
-import { loadRequest, saveRequest, saveWorkout } from '@/workout/storage'
-import { DIFFICULTY_HINTS, difficultyLabel, equipmentLabel, workoutTypeLabel } from '@/workout/text'
+import {
+  DIFFICULTY_HINTS,
+  MINUTES,
+  difficultyLabel,
+  equipmentLabel,
+  generate,
+  loadRequest,
+  saveRequest,
+  saveWorkout,
+  workoutTypeLabel,
+  type WorkoutRequest,
+} from '@/workout'
 
 const optionCard =
   'flex cursor-pointer flex-col gap-1 rounded-lg border p-3 has-checked:border-primary has-checked:bg-muted has-focus-visible:ring-3 has-focus-visible:ring-ring/50'

@@ -1,7 +1,7 @@
 import { DIFFICULTIES } from '@/library'
 import type { BlockRole, Difficulty, Exercise } from '@/library'
 import { shuffle } from './random'
-import { coolDownSeconds, mainSeconds, warmUpSeconds } from './timing'
+import { CHANGE_OVER_SECONDS, coolDownSeconds, mainSeconds, warmUpSeconds } from './workout'
 import type {
   MainBlock,
   Minutes,
@@ -62,8 +62,38 @@ const MAIN_BY_DIFFICULTY: Record<
 
 const WARM_UP_SECONDS = 30
 const HOLD_SECONDS = 40
-/** Mobility main-Block Sets are separated by the normal change-over, not strength rest. */
-const MOBILITY_REST_SECONDS = 10
+
+type MainRest = Pick<MainBlock, 'restSeconds' | 'roundRestSeconds'>
+
+/** How the Request's workout type and Difficulty shape the main Block's Sets and rest. */
+function mainRules(request: WorkoutRequest): {
+  target: (exercise: Exercise) => Target
+  rest: MainRest
+} {
+  const table = MAIN_BY_DIFFICULTY[request.difficulty]
+  const time = (seconds: number): Target => ({ measure: 'time', seconds })
+  switch (request.workoutType) {
+    case 'cardio/HIIT':
+      return {
+        target: () => time(table.cardioWorkSeconds),
+        rest: { restSeconds: table.cardioRestSeconds, roundRestSeconds: table.roundRestSeconds },
+      }
+    case 'mobility/stretching':
+      // Mobility does not change with Difficulty: 40 s holds with change-overs between them.
+      return {
+        target: () => time(HOLD_SECONDS),
+        rest: { restSeconds: CHANGE_OVER_SECONDS, roundRestSeconds: CHANGE_OVER_SECONDS },
+      }
+    default:
+      return {
+        target: (exercise) =>
+          exercise.measure === 'reps'
+            ? { measure: 'reps', reps: table.reps }
+            : time(table.timedSeconds),
+        rest: { restSeconds: table.restSeconds, roundRestSeconds: table.roundRestSeconds },
+      }
+  }
+}
 
 function isEligible(exercise: Exercise, request: WorkoutRequest, role: BlockRole): boolean {
   return (
@@ -74,58 +104,30 @@ function isEligible(exercise: Exercise, request: WorkoutRequest, role: BlockRole
   )
 }
 
-function timedSet(exercise: Exercise, seconds: number): WorkoutSet {
-  return { exercise, target: { measure: 'time', seconds }, perSide: exercise.perSide }
+function toSet(exercise: Exercise, target: Target): WorkoutSet {
+  return { exercise, target, perSide: exercise.perSide }
 }
 
 /** A single pass of as many Sets as fit in the budget. */
 function fillPass(
   pool: Exercise[],
   budgetSeconds: number,
-  toSet: (exercise: Exercise) => WorkoutSet,
+  target: Target,
   blockSeconds: (sets: WorkoutSet[]) => number,
 ): WorkoutSet[] {
   const sets: WorkoutSet[] = []
   for (const exercise of pool) {
-    const candidate = [...sets, toSet(exercise)]
-    if (blockSeconds(candidate) <= budgetSeconds) sets.push(candidate[candidate.length - 1])
+    const set = toSet(exercise, target)
+    if (blockSeconds([...sets, set]) <= budgetSeconds) sets.push(set)
   }
   return sets
-}
-
-function mainTarget(exercise: Exercise, request: WorkoutRequest): Target {
-  const table = MAIN_BY_DIFFICULTY[request.difficulty]
-  if (request.workoutType === 'cardio/HIIT') {
-    return { measure: 'time', seconds: table.cardioWorkSeconds }
-  }
-  if (request.workoutType === 'mobility/stretching') {
-    return { measure: 'time', seconds: HOLD_SECONDS }
-  }
-  return exercise.measure === 'reps'
-    ? { measure: 'reps', reps: table.reps }
-    : { measure: 'time', seconds: table.timedSeconds }
-}
-
-function mainRest(request: WorkoutRequest): Pick<MainBlock, 'restSeconds' | 'roundRestSeconds'> {
-  const table = MAIN_BY_DIFFICULTY[request.difficulty]
-  const restSeconds =
-    request.workoutType === 'cardio/HIIT'
-      ? table.cardioRestSeconds
-      : request.workoutType === 'mobility/stretching'
-        ? MOBILITY_REST_SECONDS
-        : table.restSeconds
-  return { restSeconds, roundRestSeconds: table.roundRestSeconds }
 }
 
 /**
  * Repeats the Sets in Rounds, stopping after the Set whose end lands nearest the budget.
  * The first Round is always complete.
  */
-function fitRounds(
-  sets: WorkoutSet[],
-  rest: Pick<MainBlock, 'restSeconds' | 'roundRestSeconds'>,
-  budgetSeconds: number,
-): MainBlock {
+function fitRounds(sets: WorkoutSet[], rest: MainRest, budgetSeconds: number): MainBlock {
   let best: MainBlock = { sets, rounds: 1, lastRoundSets: sets.length, ...rest }
   if (sets.length === 0) return { ...best, rounds: 0, lastRoundSets: 0 }
   let bestDistance = Math.abs(mainSeconds(best) - budgetSeconds)
@@ -145,8 +147,9 @@ function fitRounds(
 
 /**
  * Builds a Workout for the Request from the library. Pure: all randomness comes from `random`.
- * Warm-up and cool-down are filled first; the main Block then absorbs whatever time is left,
- * so the total lands near the chosen time.
+ * The main Block's Exercises are picked first. Warm-up and cool-down are then filled to their
+ * minutes, and the main Block's Rounds absorb whatever time is left, so the total lands near
+ * the chosen time.
  */
 export function generate(
   request: WorkoutRequest,
@@ -160,28 +163,25 @@ export function generate(
       random,
     )
 
+  const rules = mainRules(request)
+  const mainSets = pool('main')
+    .slice(0, MAIN_EXERCISES[request.minutes])
+    .map((exercise) => toSet(exercise, rules.target(exercise)))
   const warmUp = fillPass(
     pool('warm-up'),
     split.warmUp * 60,
-    (exercise) => timedSet(exercise, WARM_UP_SECONDS),
+    { measure: 'time', seconds: WARM_UP_SECONDS },
     warmUpSeconds,
   )
   const coolDown = fillPass(
     pool('cool-down'),
     split.coolDown * 60,
-    (exercise) => timedSet(exercise, HOLD_SECONDS),
+    { measure: 'time', seconds: HOLD_SECONDS },
     coolDownSeconds,
   )
 
-  const mainSets = pool('main')
-    .slice(0, MAIN_EXERCISES[request.minutes])
-    .map((exercise) => ({
-      exercise,
-      target: mainTarget(exercise, request),
-      perSide: exercise.perSide,
-    }))
   const mainBudget = request.minutes * 60 - warmUpSeconds(warmUp) - coolDownSeconds(coolDown)
-  const main = fitRounds(mainSets, mainRest(request), mainBudget)
+  const main = fitRounds(mainSets, rules.rest, mainBudget)
 
   return { request, warmUp, main, coolDown }
 }

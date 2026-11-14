@@ -96,7 +96,8 @@ describe('generate', () => {
           expect(workout.main.lastRoundSets).toBeGreaterThanOrEqual(1)
           expect(workout.main.lastRoundSets).toBeLessThanOrEqual(mainExercises)
 
-          const total = plannedSeconds(workout)
+          const total = blocks.warmUp + blocks.main + blocks.coolDown
+          expect(plannedSeconds(workout)).toBe(total)
           expect(total).toBeGreaterThanOrEqual(minutes * 60 * 0.9)
           expect(total).toBeLessThanOrEqual(minutes * 60 * 1.1)
         }
@@ -134,7 +135,7 @@ describe('generate', () => {
     ['intermediate', 30, 30],
     ['advanced', 40, 20],
   ] as const)(
-    'uses %s cardio/HIIT intervals: %i s work, %i s rest, even for rep Exercises',
+    'uses %s cardio/HIIT work and rest: %i s work, %i s rest, even for rep Exercises',
     (difficulty, workSeconds, restSeconds) => {
       const library = many(5, {
         blockRoles: ['main'],
@@ -170,24 +171,28 @@ describe('generate', () => {
     for (const set of workout.coolDown) expect(set.target).toEqual({ measure: 'time', seconds: 40 })
   })
 
-  it('holds mobility/stretching main-Block Sets for 40 s, separated by 10 s change-overs', () => {
-    const library = many(5, {
-      blockRoles: ['main'],
-      workoutTypes: ['mobility/stretching'],
-      measure: 'reps',
-    })
+  it.each(['beginner', 'intermediate', 'advanced'] as const)(
+    'holds %s mobility/stretching main-Block Sets for 40 s, with 10 s change-overs and no Round rest',
+    (difficulty) => {
+      const library = many(5, {
+        blockRoles: ['main'],
+        workoutTypes: ['mobility/stretching'],
+        measure: 'reps',
+      })
 
-    const workout = generate(
-      { ...request, workoutType: 'mobility/stretching', difficulty: 'advanced' },
-      library,
-      seededRandom(1),
-    )
+      const workout = generate(
+        { ...request, workoutType: 'mobility/stretching', difficulty },
+        library,
+        seededRandom(1),
+      )
 
-    for (const set of workout.main.sets) {
-      expect(set.target).toEqual({ measure: 'time', seconds: 40 })
-    }
-    expect(workout.main.restSeconds).toBe(10)
-  })
+      for (const set of workout.main.sets) {
+        expect(set.target).toEqual({ measure: 'time', seconds: 40 })
+      }
+      expect(workout.main.restSeconds).toBe(10)
+      expect(workout.main.roundRestSeconds).toBe(10)
+    },
+  )
 
   it('makes a per-side Exercise one Set, counting a rep as 3 s doubled per side', () => {
     const library = [

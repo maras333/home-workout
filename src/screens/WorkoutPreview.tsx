@@ -1,8 +1,15 @@
 import { useId, useState } from 'react'
 import { Navigate } from 'react-router'
-import { plannedSeconds, type WorkoutSet } from '@/workout'
-import { loadWorkout } from '@/workout/storage'
-import { durationText, requestSummary, roundsText, targetText } from '@/workout/text'
+import {
+  durationText,
+  exerciseCount,
+  loadWorkout,
+  plannedSeconds,
+  requestSummary,
+  roundsText,
+  targetText,
+  type WorkoutSet,
+} from '@/workout'
 
 function BlockSection({ title, sets }: { title: string; sets: WorkoutSet[] }) {
   const headingId = useId()
@@ -12,8 +19,8 @@ function BlockSection({ title, sets }: { title: string; sets: WorkoutSet[] }) {
         {title}
       </h2>
       <ul className="flex flex-col divide-y rounded-lg border">
-        {sets.map((set) => (
-          <li key={set.exercise.id} className="flex items-center gap-4 p-2">
+        {sets.map((set, index) => (
+          <li key={`${index}-${set.exercise.id}`} className="flex items-center gap-4 p-2">
             <img
               src={set.exercise.gifUrl}
               alt={set.exercise.name}
@@ -35,15 +42,14 @@ export function WorkoutPreview() {
   const [workout] = useState(loadWorkout)
   if (!workout) return <Navigate to="/" replace />
 
-  const exerciseCount = workout.warmUp.length + workout.main.sets.length + workout.coolDown.length
-
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6 p-8">
       <header className="flex flex-col gap-1">
         <h1 className="text-3xl font-bold">Workout preview</h1>
         <p>{requestSummary(workout.request)}</p>
         <p className="text-muted-foreground">
-          Planned total: {durationText(plannedSeconds(workout))} · {exerciseCount} Exercises
+          Planned total: {durationText(plannedSeconds(workout))} · {exerciseCount(workout)}{' '}
+          Exercises
         </p>
       </header>
       <BlockSection title="Warm-up" sets={workout.warmUp} />

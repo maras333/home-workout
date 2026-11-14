@@ -130,6 +130,15 @@ describe('Workout preview', () => {
   it.each([
     ['nothing is saved', null],
     ['the saved Workout is corrupt', '{"request":{}}'],
+    [
+      'a saved Set is corrupt',
+      JSON.stringify({
+        request: { workoutType: 'core', minutes: 15, difficulty: 'beginner', equipment: [] },
+        warmUp: [],
+        main: { sets: [{}], rounds: 1, lastRoundSets: 1, restSeconds: 30, roundRestSeconds: 60 },
+        coolDown: [],
+      }),
+    ],
   ])('sends you to the Workout Request form when %s', (_case, saved) => {
     if (saved !== null) localStorage.setItem('home-workout:current-workout', saved)
 
