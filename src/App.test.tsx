@@ -12,13 +12,11 @@ function renderAt(path: string) {
 }
 
 describe('app shell', () => {
-  it.each([
-    ['/', 'Workout Request'],
-    ['/follow-along', 'Follow-along'],
-  ])('shows the %s screen with the ExerciseDB credit footer', (path, heading) => {
-    renderAt(path)
+  // Follow-along shows the footer too; see src/follow-along.test.tsx.
+  it('shows the Workout Request form with the ExerciseDB credit footer', () => {
+    renderAt('/')
 
-    expect(screen.getByRole('heading', { level: 1, name: heading })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1, name: 'Workout Request' })).toBeInTheDocument()
 
     const footer = screen.getByRole('contentinfo')
     expect(footer).toHaveTextContent('Exercise data & GIFs: ExerciseDB (AGPL-3.0) · Source code')

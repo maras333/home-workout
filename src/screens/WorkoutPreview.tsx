@@ -1,5 +1,6 @@
 import { useId, useState } from 'react'
-import { Navigate } from 'react-router'
+import { Navigate, useNavigate } from 'react-router'
+import { Button } from '@/components/ui/button'
 import {
   durationText,
   exerciseCount,
@@ -40,12 +41,18 @@ function BlockSection({ title, sets }: { title: string; sets: WorkoutSet[] }) {
 
 export function WorkoutPreview() {
   const [workout] = useState(loadWorkout)
+  const navigate = useNavigate()
   if (!workout) return <Navigate to="/" replace />
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6 p-8">
       <header className="flex flex-col gap-1">
-        <h1 className="text-3xl font-bold">Workout preview</h1>
+        <div className="flex items-center justify-between gap-4">
+          <h1 className="text-3xl font-bold">Workout preview</h1>
+          <Button size="lg" className="px-6" onClick={() => navigate('/follow-along')}>
+            Start Workout
+          </Button>
+        </div>
         <p>{requestSummary(workout.request)}</p>
         <p className="text-muted-foreground">
           Planned total: {durationText(plannedSeconds(workout))} · {exerciseCount(workout)}{' '}

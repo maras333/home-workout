@@ -1,5 +1,6 @@
 import { Navigate, Outlet, Route, Routes } from 'react-router'
 import { CreditFooter } from '@/components/CreditFooter'
+import { FollowAlong } from '@/screens/FollowAlong'
 import { WorkoutPreview } from '@/screens/WorkoutPreview'
 import { WorkoutRequestForm } from '@/screens/WorkoutRequestForm'
 
@@ -14,17 +15,13 @@ function Layout() {
   )
 }
 
-function Placeholder({ title }: { title: string }) {
-  return <h1 className="p-8 text-3xl font-bold">{title}</h1>
-}
-
 export function App() {
   return (
     <Routes>
       <Route element={<Layout />}>
         <Route index element={<WorkoutRequestForm />} />
         <Route path="workout" element={<WorkoutPreview />} />
-        <Route path="follow-along" element={<Placeholder title="Follow-along" />} />
+        <Route path="follow-along" element={<FollowAlong />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>
