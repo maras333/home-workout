@@ -3,3 +3,6 @@ dist
 .scratch
 .claude
 package-lock.json
+# Copied unmodified from ExerciseDB by scripts/copy-exercisedb.ts
+src/library/exercisedb
+public/exercisedb
