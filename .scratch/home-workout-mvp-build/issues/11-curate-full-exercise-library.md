@@ -8,7 +8,7 @@ Spec: [Home Workout MVP](../../home-workout-mvp/spec.md), section "Exercise libr
 
 **Status:** ready-for-human
 
-- [ ] An agent drafts the id list and tags for about 120–150 home-fit Exercises from the pinned snapshot; chair or bench inferred from names ("bench", "chair", "incline", "decline"); Difficulty hand-tagged
-- [ ] The human reviews and corrects the tags
-- [ ] The copy script is rerun with the final list
-- [ ] The data-check test gains the curation target: at least 6 bodyweight-only main-Block Exercises for every workout type × Difficulty, and passes
+- [x] An agent drafts the id list and tags for about 120–150 home-fit Exercises from the pinned snapshot; chair or bench inferred from names ("bench", "chair", "incline", "decline"); Difficulty hand-tagged
+- [x] The human reviews and corrects the tags
+- [x] The copy script is rerun with the final list
+- [x] The data-check test gains the curation target: at least 6 bodyweight-only main-Block Exercises for every workout type × Difficulty, and passes
