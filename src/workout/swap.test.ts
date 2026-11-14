@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { exercise, many } from '@/test/exercises'
-import { canSwap, generate, plannedSeconds, seededRandom, swap } from '@/workout'
+import { allSets, canSwap, generate, plannedSeconds, seededRandom, swap } from '@/workout'
 import type { Workout, WorkoutRequest } from '@/workout'
 
 const request: WorkoutRequest = {
@@ -12,13 +12,11 @@ const request: WorkoutRequest = {
 const seeds = Array.from({ length: 30 }, (_, i) => i + 1)
 
 function ids(workout: Workout): string[] {
-  return [...workout.warmUp, ...workout.main.sets, ...workout.coolDown].map(
-    (set) => set.exercise.id,
-  )
+  return allSets(workout).map((set) => set.exercise.id)
 }
 
 describe('swap', () => {
-  it('replaces one warm-up Set with an eligible Exercise not in the Workout, leaving the rest', () => {
+  it('swaps one warm-up Set for an eligible Exercise not in the Workout, leaving the rest', () => {
     const library = [
       ...many(12, { blockRoles: ['warm-up'] }),
       ...many(8, { blockRoles: ['main'] }),
@@ -162,5 +160,36 @@ describe('swap', () => {
     expect(swap(workout, mainPosition, library, seededRandom(1))).toBeNull()
     expect(canSwap(workout, mainPosition, library)).toBe(false)
     expect(canSwap(workout, warmUpPosition, library)).toBe(true)
+  })
+
+  it('refits the main Block when a per-side warm-up or cool-down Exercise doubles a Set', () => {
+    const library = [
+      ...many(12, { blockRoles: ['warm-up'] }),
+      ...many(5, { blockRoles: ['main'] }),
+      ...many(8, { blockRoles: ['cool-down'] }),
+    ]
+    const perSideWarmUps = many(4, { blockRoles: ['warm-up'], perSide: true })
+    const perSideHolds = many(2, { blockRoles: ['cool-down'], perSide: true })
+    const short = { ...request, minutes: 15 } as const
+
+    for (const seed of seeds) {
+      const random = seededRandom(seed)
+      const withPerSide = [...library, ...perSideWarmUps, ...perSideHolds]
+      let workout = generate(short, library, random)
+      // Swap each warm-up and cool-down Set until it holds a per-side Exercise.
+      const positions = [
+        ...workout.warmUp.map((_, index) => ({ block: 'warmUp' as const, index })),
+        ...workout.coolDown.map((_, index) => ({ block: 'coolDown' as const, index })),
+      ]
+      for (const position of positions) {
+        const sets = () => (position.block === 'warmUp' ? workout.warmUp : workout.coolDown)
+        while (!sets()[position.index].perSide) {
+          workout = swap(workout, position, withPerSide, random) ?? workout
+        }
+      }
+
+      // Every warm-up and cool-down Set now lasts twice as long: about 3 min more in all.
+      expect(Math.abs(plannedSeconds(workout) - 15 * 60)).toBeLessThanOrEqual(15 * 60 * 0.1)
+    }
   })
 })

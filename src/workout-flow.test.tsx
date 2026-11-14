@@ -33,11 +33,9 @@ function blockExercises(name: RegExp) {
     .map((gif) => gif.getAttribute('alt'))
 }
 
-/** The main Block's Exercise names, read from the row GIFs' alt text. */
+/** The main Block's Exercise names. */
 function mainExercises() {
-  return within(screen.getByRole('region', { name: /^Main/ }))
-    .getAllByRole('img')
-    .map((gif) => gif.getAttribute('alt'))
+  return blockExercises(/^Main/)
 }
 
 beforeEach(() => {

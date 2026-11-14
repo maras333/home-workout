@@ -70,8 +70,8 @@ const MAIN_BY_DIFFICULTY: Record<
   },
 }
 
-export const WARM_UP_SECONDS = 30
-export const HOLD_SECONDS = 40
+const WARM_UP_SECONDS = 30
+const HOLD_SECONDS = 40
 
 type MainRest = Pick<MainBlock, 'restSeconds' | 'roundRestSeconds'>
 
@@ -114,11 +114,25 @@ export function isEligible(exercise: Exercise, request: WorkoutRequest, role: Bl
   )
 }
 
-export function toSet(exercise: Exercise, target: Target): WorkoutSet {
+function toSet(exercise: Exercise, target: Target): WorkoutSet {
   return { exercise, target, perSide: exercise.perSide }
 }
 
-const sharesGroup = (a: MuscleGroup[], b: MuscleGroup[]) => a.some((group) => b.includes(group))
+/** A Set of `exercise` in a Block: 30 s in the warm-up, a 40 s hold in the cool-down, and the
+ * Request's rules in the main Block. */
+export function blockSet(exercise: Exercise, role: BlockRole, request: WorkoutRequest): WorkoutSet {
+  switch (role) {
+    case 'warm-up':
+      return toSet(exercise, { measure: 'time', seconds: WARM_UP_SECONDS })
+    case 'cool-down':
+      return toSet(exercise, { measure: 'time', seconds: HOLD_SECONDS })
+    case 'main':
+      return toSet(exercise, mainRules(request).target(exercise))
+  }
+}
+
+export const sharesGroup = (a: MuscleGroup[], b: MuscleGroup[]) =>
+  a.some((group) => b.includes(group))
 
 /**
  * Picks the main Block's Exercises one slot at a time from a shuffled pool. Each slot takes the
@@ -212,7 +226,7 @@ function fillPass(
   pool: Exercise[],
   mainGroups: MuscleGroup[],
   budgetSeconds: number,
-  target: Target,
+  makeSet: (exercise: Exercise) => WorkoutSet,
   blockSeconds: (sets: WorkoutSet[]) => number,
 ): WorkoutSet[] {
   const worksMainGroups = (exercise: Exercise) =>
@@ -223,7 +237,7 @@ function fillPass(
   ]
   const sets: WorkoutSet[] = []
   const tryAdd = (exercise: Exercise) => {
-    const set = toSet(exercise, target)
+    const set = makeSet(exercise)
     if (blockSeconds([...sets, set]) > budgetSeconds) return false
     sets.push(set)
     return true
@@ -301,20 +315,20 @@ export function generate(
   const previousIds = new Set(previous?.main.sets.map((set) => set.exercise.id))
   const mainSets = orderToAvoidClashes(
     pickMain(pool('main'), MAIN_EXERCISES[request.minutes], request, previousIds),
-  ).map((exercise) => toSet(exercise, rules.target(exercise)))
+  ).map((exercise) => blockSet(exercise, 'main', request))
   const mainGroups = mainSets.flatMap((set) => set.exercise.muscleGroups.primary)
   const warmUp = fillPass(
     pool('warm-up'),
     mainGroups,
     split.warmUp * 60,
-    { measure: 'time', seconds: WARM_UP_SECONDS },
+    (exercise) => blockSet(exercise, 'warm-up', request),
     warmUpSeconds,
   )
   const coolDown = fillPass(
     pool('cool-down'),
     mainGroups,
     split.coolDown * 60,
-    { measure: 'time', seconds: HOLD_SECONDS },
+    (exercise) => blockSet(exercise, 'cool-down', request),
     coolDownSeconds,
   )
 

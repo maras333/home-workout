@@ -47,7 +47,12 @@ export function plannedSeconds(workout: Workout): number {
   )
 }
 
+/** Every Set in the Workout, Block by Block, with the main Block's Sets once (not per Round). */
+export function allSets(workout: Workout): WorkoutSet[] {
+  return [...workout.warmUp, ...workout.main.sets, ...workout.coolDown]
+}
+
 /** How many Exercises the Workout holds; the main Block counts each Exercise once. */
 export function exerciseCount(workout: Workout): number {
-  return workout.warmUp.length + workout.main.sets.length + workout.coolDown.length
+  return allSets(workout).length
 }
