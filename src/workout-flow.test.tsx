@@ -3,6 +3,8 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { App } from '@/App'
+import { library } from '@/library'
+import { difficultyLabel, equipmentLabel } from '@/workout'
 
 function renderAt(path: string) {
   return render(
@@ -14,6 +16,12 @@ function renderAt(path: string) {
 
 function workoutList() {
   return screen.getAllByRole('listitem').map((row) => row.textContent)
+}
+
+function mainRows() {
+  return within(screen.getByRole('region', { name: /^Main/ }))
+    .getAllByRole('listitem')
+    .map((row) => row.textContent)
 }
 
 beforeEach(() => {
@@ -125,6 +133,82 @@ describe('Workout preview', () => {
 
     expect(screen.getByRole('heading', { level: 1, name: 'Workout preview' })).toBeInTheDocument()
     expect(workoutList()).toEqual(before)
+  })
+
+  it('replaces the Workout with different main-Block Exercises on "Generate another"', async () => {
+    const user = userEvent.setup()
+    const { unmount } = renderAt('/')
+    await user.click(screen.getByRole('button', { name: 'Generate' }))
+    const before = mainRows()
+
+    await user.click(screen.getByRole('button', { name: 'Generate another' }))
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    const after = mainRows()
+    expect(after.length).toBeGreaterThan(0)
+    expect(after.filter((row) => before.includes(row))).toEqual([])
+    expect(screen.getByText('Full body · 30 min · Intermediate · Bodyweight')).toBeInTheDocument()
+
+    const shown = workoutList()
+    unmount()
+    renderAt('/workout')
+    expect(workoutList()).toEqual(shown)
+  })
+
+  it('"← Change request" returns to the form filled in with the Workout\'s Request', async () => {
+    const user = userEvent.setup()
+    const { unmount } = renderAt('/')
+    await user.click(screen.getByRole('radio', { name: 'Upper body' }))
+    await user.click(screen.getByRole('radio', { name: '45 min' }))
+    await user.click(screen.getByRole('radio', { name: 'Advanced' }))
+    await user.click(screen.getByRole('checkbox', { name: 'Kettlebell' }))
+    await user.click(screen.getByRole('button', { name: 'Generate' }))
+    unmount()
+    // The form's remembered Request may differ from the Workout's (e.g. a Favourite started later).
+    localStorage.removeItem('home-workout:last-request')
+    renderAt('/workout')
+
+    await user.click(screen.getByRole('button', { name: '← Change request' }))
+
+    expect(screen.getByRole('heading', { level: 1, name: 'Workout Request' })).toBeInTheDocument()
+    expect(screen.getByRole('radio', { name: 'Upper body' })).toBeChecked()
+    expect(screen.getByRole('radio', { name: '45 min' })).toBeChecked()
+    expect(screen.getByRole('radio', { name: 'Advanced' })).toBeChecked()
+    expect(screen.getByRole('checkbox', { name: 'Kettlebell' })).toBeChecked()
+    expect(screen.getByRole('checkbox', { name: 'Dumbbells' })).not.toBeChecked()
+  })
+
+  it('opens the Exercise detail dialog when an Exercise row is clicked', async () => {
+    const user = userEvent.setup()
+    renderAt('/')
+    await user.click(screen.getByRole('checkbox', { name: 'Dumbbells' }))
+    await user.click(screen.getByRole('button', { name: 'Generate' }))
+    const main = screen.getByRole('region', { name: /^Main/ })
+    const row = within(main).getAllByRole('listitem')[0]
+    const name = within(row).getByRole('img').getAttribute('alt') ?? ''
+    const exercise = library.find((candidate) => candidate.name === name)
+    if (!exercise) throw new Error(`No Exercise named ${name}`)
+
+    await user.click(within(row).getByRole('button'))
+
+    const dialog = screen.getByRole('dialog', { name })
+    expect(within(dialog).getByRole('img')).toHaveAttribute('src', exercise.gifUrl)
+    expect(
+      within(dialog)
+        .getAllByRole('listitem')
+        .map((step) => step.textContent),
+    ).toEqual(exercise.steps)
+    expect(dialog).toHaveTextContent(exercise.trains)
+    expect(exercise.trains).toMatch(/^Trains: /)
+    const equipment =
+      exercise.equipment.length > 0
+        ? exercise.equipment.map(equipmentLabel).join(', ')
+        : 'Bodyweight'
+    expect(dialog).toHaveTextContent(`Equipment: ${equipment}`)
+    expect(dialog).toHaveTextContent(`Difficulty: ${difficultyLabel(exercise.difficulty)}`)
+
+    await user.click(within(dialog).getByRole('button', { name: 'Close' }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
 
   it.each([

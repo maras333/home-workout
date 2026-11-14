@@ -280,6 +280,45 @@ describe('generate', () => {
   })
 })
 
+describe('generate: another Workout', () => {
+  const mainIds = (workout: Workout) => workout.main.sets.map((set) => set.exercise.id)
+  // The previous Workout comes back from storage, so it holds copies, not the library's objects.
+  const fromStorage = (workout: Workout): Workout => JSON.parse(JSON.stringify(workout))
+  const seeds = Array.from({ length: 30 }, (_, i) => i + 1)
+
+  it("steers away from the previous Workout's main-Block Exercises when the pool allows", () => {
+    const library = [
+      ...many(10, { blockRoles: ['warm-up'] }),
+      ...many(10, { blockRoles: ['main'] }),
+      ...many(10, { blockRoles: ['cool-down'] }),
+    ]
+
+    for (const seed of seeds) {
+      const previous = fromStorage(generate(request, library, seededRandom(seed)))
+      const next = generate(request, library, seededRandom(seed + 100), previous)
+
+      expect(next.main.sets).toHaveLength(5)
+      expect(mainIds(next).filter((id) => mainIds(previous).includes(id))).toEqual([])
+    }
+  })
+
+  it('reuses as few previous main-Block Exercises as it must when the pool is small', () => {
+    const library = [
+      ...many(10, { blockRoles: ['warm-up'] }),
+      ...many(7, { blockRoles: ['main'] }),
+      ...many(10, { blockRoles: ['cool-down'] }),
+    ]
+
+    for (const seed of seeds) {
+      const previous = fromStorage(generate(request, library, seededRandom(seed)))
+      const next = generate(request, library, seededRandom(seed + 100), previous)
+
+      expect(next.main.sets).toHaveLength(5)
+      expect(mainIds(next).filter((id) => mainIds(previous).includes(id))).toHaveLength(3)
+    }
+  })
+})
+
 describe('generate: preferences', () => {
   const main = (overrides: Partial<Exercise>) => exercise({ blockRoles: ['main'], ...overrides })
   const primary = (group: MuscleGroup, overrides: Partial<Exercise> = {}) =>

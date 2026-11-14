@@ -123,6 +123,7 @@ const sharesGroup = (a: MuscleGroup[], b: MuscleGroup[]) => a.some((group) => b.
 /**
  * Picks the main Block's Exercises one slot at a time from a shuffled pool. Each slot takes the
  * best candidate by these rules, strongest first, so ties fall to the shuffle:
+ * 0. not in the previous Workout's main Block, so "Generate another" changes something;
  * 1. reach "at least half on ticked Equipment" when the remaining slots only just allow it;
  * 2. don't share a primary group with the previous pick (or, in the last slot, with the first,
  *    since Rounds wrap around);
@@ -132,7 +133,12 @@ const sharesGroup = (a: MuscleGroup[], b: MuscleGroup[]) => a.some((group) => b.
  * Equipment ranks above neighbours because this only decides which Exercises go in;
  * `orderToAvoidClashes` then decides their order.
  */
-function pickMain(pool: Exercise[], count: number, request: WorkoutRequest): Exercise[] {
+function pickMain(
+  pool: Exercise[],
+  count: number,
+  request: WorkoutRequest,
+  previousIds: ReadonlySet<string>,
+): Exercise[] {
   const rotation = ROTATION[request.workoutType]
   const equipmentWanted = request.equipment.length > 0 ? Math.ceil(count / 2) : 0
   const picks: Exercise[] = []
@@ -151,6 +157,7 @@ function pickMain(pool: Exercise[], count: number, request: WorkoutRequest): Exe
     const penalties = (exercise: Exercise): number[] => {
       const groups = exercise.muscleGroups.primary
       return [
+        previousIds.has(exercise.id) ? 1 : 0,
         mustUseEquipment && exercise.equipment.length === 0 ? 1 : 0,
         sharesGroup(groups, previous) || sharesGroup(groups, firstPickGroups) ? 1 : 0,
         exercise.difficulty === request.difficulty ? 0 : 1,
@@ -262,6 +269,8 @@ function fitRounds(sets: WorkoutSet[], rest: MainRest, budgetSeconds: number): M
 
 /**
  * Builds a Workout for the Request from the library. Pure: all randomness comes from `random`.
+ * Given the `previous` Workout ("Generate another"), it steers away from that Workout's
+ * main-Block Exercises as far as the pool allows.
  * The main Block's Exercises are picked first. Warm-up and cool-down are then filled to their
  * minutes, and the main Block's Rounds absorb whatever time is left, so the total lands near
  * the chosen time.
@@ -270,6 +279,7 @@ export function generate(
   request: WorkoutRequest,
   library: readonly Exercise[],
   random: RandomSource,
+  previous?: Workout,
 ): Workout {
   const split = TIME_SPLIT[request.minutes]
   const pool = (role: BlockRole) =>
@@ -279,8 +289,9 @@ export function generate(
     )
 
   const rules = mainRules(request)
+  const previousIds = new Set(previous?.main.sets.map((set) => set.exercise.id))
   const mainSets = orderToAvoidClashes(
-    pickMain(pool('main'), MAIN_EXERCISES[request.minutes], request),
+    pickMain(pool('main'), MAIN_EXERCISES[request.minutes], request, previousIds),
   ).map((exercise) => toSet(exercise, rules.target(exercise)))
   const mainGroups = mainSets.flatMap((set) => set.exercise.muscleGroups.primary)
   const warmUp = fillPass(

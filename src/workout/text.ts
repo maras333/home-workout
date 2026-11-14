@@ -15,15 +15,18 @@ export const DIFFICULTY_HINTS: Record<Difficulty, string> = {
   advanced: 'You train regularly and want to be pushed.',
 }
 
+/** e.g. "Dumbbells, Kettlebell", or "Bodyweight" for none */
+export function equipmentText(equipment: readonly Equipment[]): string {
+  return equipment.length > 0 ? equipment.map(equipmentLabel).join(', ') : 'Bodyweight'
+}
+
 /** e.g. "Full body · 30 min · Intermediate · Dumbbells, Kettlebell" */
 export function requestSummary(request: WorkoutRequest): string {
-  const equipment =
-    request.equipment.length > 0 ? request.equipment.map(equipmentLabel).join(', ') : 'Bodyweight'
   return [
     workoutTypeLabel(request.workoutType),
     `${request.minutes} min`,
     difficultyLabel(request.difficulty),
-    equipment,
+    equipmentText(request.equipment),
   ].join(' · ')
 }
 

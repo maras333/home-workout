@@ -8,6 +8,7 @@ export {
   difficultyLabel,
   durationText,
   equipmentLabel,
+  equipmentText,
   requestSummary,
   roundsText,
   targetText,
