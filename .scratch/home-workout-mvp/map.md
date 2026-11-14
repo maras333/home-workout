@@ -30,6 +30,8 @@ An MVP spec for the home-workout web app, clear enough to hand to `/to-spec` →
 - [Choose the app's licence](issues/07-choose-app-licence.md): whole repo AGPL-3.0, public on GitHub; ExerciseDB credited in the app footer, the data folder README and the root README.
 - [Choose the stack on Vercel](issues/05-choose-stack-on-vercel.md): Vite + React + TS SPA, React Router, Tailwind v4 + shadcn/ui, Vitest with a seedable random source; curated data built into the bundle, GIFs in `public/gifs/`.
 - [Prototype the Follow-along screen](issues/06-prototype-follow-along.md): "Timeline" layout (Workout list by Block on the left, current Set on the right); everything counts down and advances automatically; halfway side switch; beeps and voice on by default; resumes after reload; "End Workout".
+- [Define the Workout preview screen](issues/08-define-workout-preview.md): own `/workout` screen; compact Workout list with Rounds folded; Swap per Exercise (applies to every Round, Rounds refitted); reusable Exercise detail dialog; current Workout saved in browser storage.
+- [Decide whether saved Workouts are in the MVP](issues/09-decide-saved-workouts.md): Favourites only (no recent list); a frozen copy of the Workout, saved from the preview or the finish screen; max 20; listed under the Request form; Start opens the preview.
 
 ## Not yet specified
 
@@ -40,6 +42,8 @@ An MVP spec for the home-workout web app, clear enough to hand to `/to-spec` →
 - Music during workouts (in-app or embedded playlists).
 - Producing our own exercise videos or animations.
 - User profiles, progression, and adapting from past Workouts.
+- An automatic list of recent or finished Workouts (history); only Favourites are kept, see [Decide whether saved Workouts are in the MVP](issues/09-decide-saved-workouts.md).
+- A browsable Exercise library page; Exercises are only seen inside a Workout, through the detail dialog. See [Decide whether a browsable Exercise library page is in the MVP](issues/10-decide-exercise-library-page.md).
 - Accounts, a backend database, any server-side endpoint.
 - LLM-generated Workouts.
 - Mobile-first or PWA design.

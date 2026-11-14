@@ -40,6 +40,14 @@ _Avoid_: Circuit, lap
 One Exercise done for a target number of reps or a target duration, followed by rest.
 _Avoid_: Interval, rep (a Set holds many reps)
 
+**Favourite**:
+A Workout the user saved to start again later, kept exactly as it was generated.
+_Avoid_: Saved workout, bookmark, template
+
+**Swap**:
+Replacing one Exercise in a generated Workout with another Exercise that fits the same Block, leaving the rest of the Workout unchanged.
+_Avoid_: Replace, reroll (that's "Generate another", which rebuilds the whole Workout)
+
 **Follow-along**:
 The guided mode in which the app walks the user through a Workout in real time.
 _Avoid_: Player, training mode, coach mode
