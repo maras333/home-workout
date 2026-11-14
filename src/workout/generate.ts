@@ -129,6 +129,8 @@ const sharesGroup = (a: MuscleGroup[], b: MuscleGroup[]) => a.some((group) => b.
  * 3. the exact requested Difficulty;
  * 4. the rotation's group for this slot;
  * 5. a primary group not used yet.
+ * Equipment ranks above neighbours because this only decides which Exercises go in;
+ * `orderToAvoidClashes` then decides their order.
  */
 function pickMain(pool: Exercise[], count: number, request: WorkoutRequest): Exercise[] {
   const rotation = ROTATION[request.workoutType]
@@ -142,17 +144,17 @@ function pickMain(pool: Exercise[], count: number, request: WorkoutRequest): Exe
     const equipmentPicked = picks.filter((pick) => pick.equipment.length > 0).length
     const mustUseEquipment = equipmentWanted - equipmentPicked >= count - slot
     const previous = picks[slot - 1]?.muscleGroups.primary ?? []
-    const first = isLast && slot > 0 ? picks[0].muscleGroups.primary : []
+    const firstPickGroups = isLast && slot > 0 ? picks[0].muscleGroups.primary : []
     const used = picks.flatMap((pick) => pick.muscleGroups.primary)
-    const target = rotation?.[slot % rotation.length]
+    const rotationGroup = rotation?.[slot % rotation.length]
 
     const penalties = (exercise: Exercise): number[] => {
       const groups = exercise.muscleGroups.primary
       return [
         mustUseEquipment && exercise.equipment.length === 0 ? 1 : 0,
-        sharesGroup(groups, previous) || sharesGroup(groups, first) ? 1 : 0,
+        sharesGroup(groups, previous) || sharesGroup(groups, firstPickGroups) ? 1 : 0,
         exercise.difficulty === request.difficulty ? 0 : 1,
-        target === undefined || groups.includes(target) ? 0 : 1,
+        rotationGroup === undefined || groups.includes(rotationGroup) ? 0 : 1,
         sharesGroup(groups, used) ? 1 : 0,
       ]
     }
@@ -206,9 +208,12 @@ function fillPass(
   target: Target,
   blockSeconds: (sets: WorkoutSet[]) => number,
 ): WorkoutSet[] {
-  const works = (exercise: Exercise) =>
+  const worksMainGroups = (exercise: Exercise) =>
     sharesGroup([...exercise.muscleGroups.primary, ...exercise.muscleGroups.secondary], mainGroups)
-  const ordered = [...pool.filter(works), ...pool.filter((exercise) => !works(exercise))]
+  const ordered = [
+    ...pool.filter(worksMainGroups),
+    ...pool.filter((exercise) => !worksMainGroups(exercise)),
+  ]
   const sets: WorkoutSet[] = []
   const tryAdd = (exercise: Exercise) => {
     const set = toSet(exercise, target)
@@ -220,7 +225,8 @@ function fillPass(
 
   // Fallback: when the pool runs out before the time does, repeat Exercises, never back to back
   // unless there is only one.
-  let added = sets.length > 0
+  // Only once every Exercise is in; until then a long unused one is better left out.
+  let added = sets.length > 0 && new Set(sets.map((set) => set.exercise)).size === ordered.length
   while (added) {
     added = false
     for (const exercise of ordered) {

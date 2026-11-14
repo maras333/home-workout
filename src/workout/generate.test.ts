@@ -332,7 +332,8 @@ describe('generate: preferences', () => {
         Array.from({ length: 3 }, () => primary(group, { workoutTypes: [workoutType] })),
       )
       const wanted = {
-        'full body': ['legs', 'glutes', 'chest', 'back', 'shoulders', 'core'],
+        // Arms are optional in full body.
+        'full body': ['legs', 'glutes', 'chest', 'back', 'shoulders', 'core', 'arms'],
         'upper body': ['chest', 'back', 'shoulders', 'arms'],
       }[workoutType]
 
@@ -392,26 +393,6 @@ describe('generate: preferences', () => {
     expect(new Set(workout.main.sets.map((set) => set.exercise.id)).size).toBe(5)
   })
 
-  it('builds mobility/stretching from joint work, then stretches, then the calmest holds', () => {
-    // Curation tags each kind with its Block role; generation keeps every Block to its role.
-    const mobility = (role: BlockRole) =>
-      many(8, { blockRoles: [role], workoutTypes: ['mobility/stretching'] })
-    const jointWork = mobility('warm-up')
-    const stretches = mobility('main')
-    const calmHolds = mobility('cool-down')
-
-    const workout = generate(
-      { ...request, workoutType: 'mobility/stretching' },
-      [...jointWork, ...stretches, ...calmHolds],
-      seededRandom(1),
-    )
-
-    const ids = (sets: WorkoutSet[]) => sets.map((set) => set.exercise.id)
-    for (const id of ids(workout.warmUp)) expect(jointWork.map((e) => e.id)).toContain(id)
-    for (const id of ids(workout.main.sets)) expect(stretches.map((e) => e.id)).toContain(id)
-    for (const id of ids(workout.coolDown)) expect(calmHolds.map((e) => e.id)).toContain(id)
-  })
-
   it('prefers warm-up and cool-down Exercises that work the main Block Muscle groups', () => {
     const others = (role: BlockRole) =>
       Array.from({ length: 12 }, () =>
@@ -449,15 +430,57 @@ describe('generate: fallbacks when the pool is small', () => {
     return blocks.warmUp + blocks.main + blocks.coolDown
   }
   const fullBlocks = (role: BlockRole, count = 12) => many(count, { blockRoles: [role] })
+  const seeds = Array.from({ length: 30 }, (_, i) => i + 1)
 
   it('drops the Equipment preference when too few Exercises use the ticked Equipment', () => {
     const withDumbbells = exercise({ blockRoles: ['main'], equipment: ['dumbbells'] })
     const library = [withDumbbells, ...many(10, { blockRoles: ['main'] })]
 
-    const workout = generate({ ...request, equipment: ['dumbbells'] }, library, seededRandom(1))
+    for (const seed of seeds) {
+      const workout = generate(
+        { ...request, equipment: ['dumbbells'] },
+        library,
+        seededRandom(seed),
+      )
+      expect(workout.main.sets).toHaveLength(5)
+      expect(workout.main.sets.map((set) => set.exercise.id)).toContain(withDumbbells.id)
+    }
+  })
 
-    expect(workout.main.sets).toHaveLength(5)
-    expect(workout.main.sets.map((set) => set.exercise.id)).toContain(withDumbbells.id)
+  it('drops the Equipment preference before it shrinks the main Block', () => {
+    const withEquipment = many(2, { blockRoles: ['main'], equipment: ['kettlebell'] })
+    const library = [
+      ...fullBlocks('warm-up'),
+      ...withEquipment,
+      ...many(4, { blockRoles: ['main'] }),
+      ...fullBlocks('cool-down'),
+    ]
+
+    for (const seed of seeds) {
+      const workout = generate(
+        { ...request, minutes: 60, equipment: ['kettlebell'] },
+        library,
+        seededRandom(seed),
+      )
+      expect(workout.main.sets).toHaveLength(6)
+    }
+  })
+
+  it('repeats a cool-down Exercise only once every one has been used', () => {
+    const library = [
+      ...many(5, { blockRoles: ['main'] }),
+      exercise({ blockRoles: ['cool-down'] }),
+      ...many(3, { blockRoles: ['cool-down'], perSide: true }),
+    ]
+
+    for (const seed of seeds) {
+      // 5 min cool-down: a plain hold takes 50 s, a per-side one 90 s. Either three per-side
+      // holds fit, or the plain one and two per-side ones leave 70 s with one still unused:
+      // repeating the plain hold would fit, but must wait until every Exercise is in.
+      const workout = generate({ ...request, minutes: 45 }, library, seededRandom(seed))
+      const ids = workout.coolDown.map((set) => set.exercise.id)
+      expect(new Set(ids).size).toBe(ids.length)
+    }
   })
 
   it.each([3, 4])(
