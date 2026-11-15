@@ -276,21 +276,21 @@ Everything is stored in `localStorage`, read defensively (a missing or corrupt v
 
 ## Out of Scope
 
-- A browsable Exercise library page; Exercises are only seen inside a Workout, through the detail dialog.
-- An automatic list of recent or finished Workouts (history); only Favourites are kept.
-- Renaming Favourites.
-- User profiles, progression, and adapting from past Workouts.
+- A browsable Exercise library page; Exercises are only seen inside a Workout, through the detail dialog. Deferred: [#23](https://github.com/maras333/home-workout/issues/23).
+- An automatic list of recent or finished Workouts (history); only Favourites are kept. Deferred: [#24](https://github.com/maras333/home-workout/issues/24).
+- Renaming Favourites. Deferred: [#25](https://github.com/maras333/home-workout/issues/25).
+- User profiles, progression, and adapting from past Workouts. Deferred: [#26](https://github.com/maras333/home-workout/issues/26).
 - Accounts, a backend database, any server-side endpoint.
 - LLM-generated Workouts.
-- Mobile-first or PWA design.
-- Languages other than English.
+- Mobile-first or PWA design. Deferred: [#27](https://github.com/maras333/home-workout/issues/27).
+- Languages other than English. Deferred: [#28](https://github.com/maras333/home-workout/issues/28).
 - Payments, public launch.
-- Music during workouts.
+- Music during workouts. Deferred: [#29](https://github.com/maras333/home-workout/issues/29).
 - Producing our own exercise videos or animations; hand-written Exercise descriptions; Exercises without a GIF.
-- Equipment beyond dumbbells, resistance band, kettlebell, chair or bench (no yoga mat); weight inputs or prescribed loads.
-- Free text, focus muscle, injuries or excluded Exercises in the Workout Request.
-- A "Done" button for rep Sets; per-side Exercises as two separate Sets.
-- End-to-end (Playwright) tests.
+- Equipment beyond dumbbells, resistance band, kettlebell, chair or bench (no yoga mat); weight inputs or prescribed loads. Deferred: [#30](https://github.com/maras333/home-workout/issues/30).
+- Free text, focus muscle, injuries or excluded Exercises in the Workout Request. Deferred: [#31](https://github.com/maras333/home-workout/issues/31).
+- A "Done" button for rep Sets; per-side Exercises as two separate Sets. Deferred: [#32](https://github.com/maras333/home-workout/issues/32).
+- End-to-end (Playwright) tests. Deferred: [#33](https://github.com/maras333/home-workout/issues/33).
 
 ## Further Notes
 
