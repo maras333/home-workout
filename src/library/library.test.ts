@@ -3,6 +3,7 @@ import { existsSync } from 'node:fs'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
 import records from '@/library/exercisedb/exercises.json'
+import { polish } from '@/library/polish'
 import {
   BLOCK_ROLES,
   DIFFICULTIES,
@@ -78,6 +79,16 @@ describe('Exercise library data check', () => {
         expect(step).not.toMatch(/^Step:\d+/)
         expect(step.trim()).not.toBe('')
       }
+    },
+  )
+
+  it.each(library.map((exercise) => [exercise.name, exercise] as const))(
+    '%s has a Polish name and as many Polish steps as English ones',
+    (_name, exercise) => {
+      const text = polish[exercise.id]
+      expect(text?.name.trim()).toBeTruthy()
+      expect(text?.steps).toHaveLength(exercise.steps.length)
+      for (const step of text?.steps ?? []) expect(step.trim()).not.toBe('')
     },
   )
 
