@@ -295,7 +295,7 @@ describe('the Workout preview in Polish', () => {
     )
   })
 
-  it('names translated Exercises in Polish and untranslated ones in English', () => {
+  it('names the Exercises in Polish', () => {
     renderAt('/workout')
 
     const main = screen.getByRole('region', { name: /^Część główna/ })
@@ -305,9 +305,9 @@ describe('the Workout preview in Polish', () => {
         .map((gif) => gif.getAttribute('alt')),
     ).toEqual([
       'pompka',
-      'bodyweight standing calf raise',
+      'wspięcia na palce w staniu',
       'pompka',
-      'bodyweight standing calf raise',
+      'wspięcia na palce w staniu',
       'pompka',
     ])
     expect(within(main).getAllByRole('button', { name: 'Zamień ćwiczenie: pompka' })).toHaveLength(
