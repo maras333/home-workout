@@ -577,7 +577,8 @@ describe('Follow-along voice', () => {
     expect(screen.getByRole('heading', { name: 'Workout complete' })).toBeInTheDocument()
   })
 
-  it('names a translated Exercise in the current Language', () => {
+  // Spoken in Polish only with a Polish voice: see src/follow-along-voice-polish.test.tsx.
+  it('shows a translated Exercise up next in the current Language', () => {
     const pushUp = library.find((candidate) => candidate.id === 'I4hDWkc')!
     const withPushUp: Workout = {
       ...workout,
@@ -589,7 +590,6 @@ describe('Follow-along voice', () => {
 
     wait(25)
 
-    expect(spoken[spoken.length - 1]).toContain('Next: pompka')
     const now = screen.getByRole('region', { name: 'Teraz' })
     expect(within(now).getByRole('img', { name: 'pompka' })).toBeInTheDocument()
   })

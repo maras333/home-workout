@@ -99,6 +99,20 @@ export type Dictionary = {
     /** Abbreviated, January first, for names like "14 Nov". */
     months: readonly string[]
   }
+  /** What Follow-along says aloud. */
+  speech: {
+    /** The tag each utterance carries, and the voice it asks the browser for. */
+    tag: string
+    /** Whether the browser's default voice may speak when no voice matches the tag. */
+    speaksWithDefaultVoice: boolean
+    noVoice: string
+    go: string
+    switchSides: string
+    complete: string
+    next: (rest: string, exercise: string, target: string) => string
+    /** Seconds in full words; reps and "per side" read as shown. */
+    seconds: (count: number) => string
+  }
 }
 
 const englishRules = new Intl.PluralRules('en')
@@ -238,6 +252,16 @@ const en: Dictionary = {
     full: 'Favourites full — delete one first',
     months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
   },
+  speech: {
+    tag: 'en-US',
+    speaksWithDefaultVoice: true,
+    noVoice: 'No English voice in this browser',
+    go: 'Go.',
+    switchSides: 'Switch sides.',
+    complete: 'Workout complete.',
+    next: (rest, exercise, target) => `${rest}. Next: ${exercise}, ${target}.`,
+    seconds: english('second', 'seconds'),
+  },
 }
 
 const pl: Dictionary = {
@@ -359,6 +383,16 @@ const pl: Dictionary = {
     save: 'Zapisz',
     full: 'Ulubione pełne — usuń jeden',
     months: ['sty', 'lut', 'mar', 'kwi', 'maj', 'cze', 'lip', 'sie', 'wrz', 'paź', 'lis', 'gru'],
+  },
+  speech: {
+    tag: 'pl-PL',
+    speaksWithDefaultVoice: false,
+    noVoice: 'Brak polskiego głosu w tej przeglądarce',
+    go: 'Start.',
+    switchSides: 'Zmień stronę.',
+    complete: 'Trening zakończony.',
+    next: (rest, exercise, target) => `${rest}. Następne: ${exercise}, ${target}.`,
+    seconds: polish('sekunda', 'sekundy', 'sekund'),
   },
 }
 

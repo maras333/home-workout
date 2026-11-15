@@ -4,6 +4,7 @@ import { loadSoundSettings, saveSoundSettings, type SoundSettings } from '@/work
 import type { Step } from '@/workout/follow-along'
 import { cueAt, type Beep } from './cues'
 import type { PlayerState } from './player'
+import { say, stopSpeaking, type Speaker } from './voice'
 
 /** Beeps and voice on/off, both on by default, remembered in browser storage. */
 export function useSoundSettings(): [SoundSettings, (settings: SoundSettings) => void] {
@@ -80,36 +81,29 @@ function playTones(context: AudioContext, tones: readonly Tone[]): void {
   }
 }
 
-const hasSpeech = () =>
-  typeof speechSynthesis !== 'undefined' && typeof SpeechSynthesisUtterance !== 'undefined'
-
-/** Stops whatever the browser's voice is saying or about to say. */
-function stopSpeaking(): void {
-  // Chrome can drop the next utterance after a needless cancel, so only cancel real speech.
-  if (hasSpeech() && (speechSynthesis.speaking || speechSynthesis.pending)) {
-    speechSynthesis.cancel()
-  }
-}
-
-/** Speaks with the browser's built-in voice, cutting off whatever it was still saying. */
-function say(text: string): void {
-  if (!hasSpeech()) return
-  stopSpeaking()
-  speechSynthesis.speak(new SpeechSynthesisUtterance(text))
-}
-
 /**
  * Beeps and speaks as Follow-along reaches each new position. Nothing plays for the
  * running position it opens on; a position reached or opened while paused plays its cue
  * on Resume.
  */
-export function useCues(steps: readonly Step[], state: PlayerState, settings: SoundSettings): void {
+export function useCues(
+  steps: readonly Step[],
+  state: PlayerState,
+  settings: SoundSettings,
+  speaker: Speaker,
+): void {
   const { index, elapsed, paused } = state
-  const { beeps, voice } = settings
+  const { beeps } = settings
+  // Without a voice for the Language, stay silent but leave the saved setting as it is.
+  const voiceOn = settings.voice && speaker.canSpeak
   const audio = useAudio()
   const { language } = useLanguage()
   // Opening paused (resumed progress), the cue waits for Resume; otherwise it already passed.
   const played = useRef<string | null>(paused ? null : `${index}:${elapsed}`)
+
+  // A new Language cuts off the cue in progress; the next one comes in the new Language.
+  // Declared before the cue effect, so a cue reached in the same render is not cut off.
+  useEffect(() => stopSpeaking(), [language])
 
   useEffect(() => {
     const at = `${index}:${elapsed}`
@@ -121,12 +115,12 @@ export function useCues(steps: readonly Step[], state: PlayerState, settings: So
       const context = audio()
       if (context) playTones(context, TONES[cue.beep])
     }
-    if (cue.speech && voice) say(cue.speech)
-  }, [steps, index, elapsed, paused, beeps, voice, audio, language])
+    if (cue.speech && voiceOn) say(cue.speech, speaker)
+  }, [steps, index, elapsed, paused, beeps, voiceOn, speaker, audio, language])
 
   useEffect(() => {
-    if (!voice) stopSpeaking()
-  }, [voice])
+    if (!voiceOn) stopSpeaking()
+  }, [voiceOn])
 
   useEffect(() => stopSpeaking, [])
 }

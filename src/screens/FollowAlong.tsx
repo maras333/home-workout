@@ -19,6 +19,7 @@ import { useControlKeys } from '@/follow-along/keys'
 import { usePlayer, type Player } from '@/follow-along/player'
 import { startingState, useSaveProgress } from '@/follow-along/progress'
 import { useCues, useSoundSettings } from '@/follow-along/sound'
+import { useSpeaker, type Speaker } from '@/follow-along/voice'
 import { useWakeLock } from '@/follow-along/wake-lock'
 import {
   clearProgress,
@@ -66,7 +67,8 @@ function FollowAlongSession({ workout }: { workout: Workout }) {
     }
   }
   const [sound, setSound] = useSoundSettings()
-  useCues(steps, player, sound)
+  const speaker = useSpeaker()
+  useCues(steps, player, sound, speaker)
 
   const upNext = nextWork(steps, player.index)
   if (upNext) preload(upNext.set.exercise.gifUrl, { as: 'image' })
@@ -75,7 +77,7 @@ function FollowAlongSession({ workout }: { workout: Workout }) {
 
   return (
     <div className="flex flex-col gap-4 p-6">
-      <SoundToggles settings={sound} onChange={setSound} />
+      <SoundToggles settings={sound} onChange={setSound} speaker={speaker} />
       <div className="flex flex-col gap-8 lg:flex-row lg:items-start">
         <aside className="flex w-full shrink-0 flex-col gap-6 lg:w-80">
           <Timeline steps={steps} player={player} total={total} />
@@ -371,13 +373,15 @@ function EndWorkout({
 function SoundToggles({
   settings,
   onChange,
+  speaker,
 }: {
   settings: SoundSettings
   onChange: (settings: SoundSettings) => void
+  speaker: Speaker
 }) {
-  const text = useText().followAlong
+  const { followAlong: text, speech } = useText()
   return (
-    <div className="flex justify-end gap-2">
+    <div className="flex items-center justify-end gap-2">
       <SoundToggle
         label={text.beeps}
         icon="🔔"
@@ -387,9 +391,11 @@ function SoundToggles({
       <SoundToggle
         label={text.voice}
         icon="🗣"
-        on={settings.voice}
+        on={settings.voice && !speaker.voiceMissing}
+        disabled={speaker.voiceMissing}
         onToggle={() => onChange({ ...settings, voice: !settings.voice })}
       />
+      {speaker.voiceMissing && <p className="text-muted-foreground text-sm">{speech.noVoice}</p>}
     </div>
   )
 }
@@ -398,11 +404,13 @@ function SoundToggle({
   label,
   icon,
   on,
+  disabled = false,
   onToggle,
 }: {
   label: string
   icon: string
   on: boolean
+  disabled?: boolean
   onToggle: () => void
 }) {
   const text = useText().followAlong
@@ -412,6 +420,7 @@ function SoundToggle({
       size="icon-lg"
       aria-label={label}
       aria-pressed={on}
+      disabled={disabled}
       title={text.soundTitle(label, on)}
       onClick={onToggle}
       className={cn('text-lg', !on && 'opacity-40 grayscale')}
