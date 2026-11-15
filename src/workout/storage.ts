@@ -1,11 +1,12 @@
 import { DIFFICULTIES, EQUIPMENT, WORKOUT_TYPES } from '@/library'
 import { MINUTES } from './types'
-import type { Workout, WorkoutRequest } from './types'
+import type { Favourite, Workout, WorkoutRequest } from './types'
 
 const REQUEST_KEY = 'home-workout:last-request'
 const WORKOUT_KEY = 'home-workout:current-workout'
 const SOUND_KEY = 'home-workout:sound-settings'
 const PROGRESS_KEY = 'home-workout:follow-along-progress'
+const FAVOURITES_KEY = 'home-workout:favourites'
 
 const DEFAULT_REQUEST: WorkoutRequest = {
   workoutType: 'full body',
@@ -160,4 +161,23 @@ export function saveProgress(index: number): void {
 
 export function clearProgress(): void {
   remove(PROGRESS_KEY)
+}
+
+function isFavourite(value: unknown): value is Favourite {
+  return (
+    isRecord(value) &&
+    typeof value.id === 'string' &&
+    typeof value.name === 'string' &&
+    isWorkout(value.workout)
+  )
+}
+
+/** The saved Favourites, newest first; a corrupt list reads as none, a corrupt entry is skipped. */
+export function loadFavourites(): Favourite[] {
+  const value = read(FAVOURITES_KEY)
+  return Array.isArray(value) ? value.filter(isFavourite) : []
+}
+
+export function saveFavourites(favourites: readonly Favourite[]): void {
+  write(FAVOURITES_KEY, favourites)
 }

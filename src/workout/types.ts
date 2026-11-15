@@ -41,3 +41,9 @@ export type Workout = {
 
 /** A number in [0, 1), like Math.random. */
 export type RandomSource = () => number
+
+/** A Workout the user saved to start again later: a frozen copy, named automatically. */
+export type Favourite = { id: string; name: string; workout: Workout }
+
+/** Favourites are capped; nothing is ever removed behind the user's back. */
+export const MAX_FAVOURITES = 20

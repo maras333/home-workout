@@ -20,14 +20,26 @@ export function equipmentText(equipment: readonly Equipment[]): string {
   return equipment.length > 0 ? equipment.map(equipmentLabel).join(', ') : 'Bodyweight'
 }
 
-/** e.g. "Full body · 30 min · Intermediate · Dumbbells, Kettlebell" */
-export function requestSummary(request: WorkoutRequest): string {
+/** e.g. ["Full body", "30 min", "Intermediate"] */
+function requestParts(request: WorkoutRequest): string[] {
   return [
     workoutTypeLabel(request.workoutType),
     `${request.minutes} min`,
     difficultyLabel(request.difficulty),
-    equipmentText(request.equipment),
-  ].join(' · ')
+  ]
+}
+
+/** e.g. "Full body · 30 min · Intermediate · Dumbbells, Kettlebell" */
+export function requestSummary(request: WorkoutRequest): string {
+  return [...requestParts(request), equipmentText(request.equipment)].join(' · ')
+}
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+/** A Favourite's automatic name, e.g. "Full body · 30 min · Intermediate · 14 Nov" */
+export function favouriteName(request: WorkoutRequest, savedOn: Date): string {
+  const date = `${savedOn.getDate()} ${MONTHS[savedOn.getMonth()]}`
+  return [...requestParts(request), date].join(' · ')
 }
 
 /** e.g. "12 reps", "40 s per side" */

@@ -56,3 +56,20 @@ export function allSets(workout: Workout): WorkoutSet[] {
 export function exerciseCount(workout: Workout): number {
   return allSets(workout).length
 }
+
+/** The value with every object's keys in order and undefined fields gone. */
+function canonical(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(canonical)
+  if (typeof value !== 'object' || value === null) return value
+  return Object.fromEntries(
+    Object.entries(value)
+      .filter(([, field]) => field !== undefined)
+      .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+      .map(([key, field]) => [key, canonical(field)]),
+  )
+}
+
+/** True when both are the same Workout, down to every Set and swap. */
+export function sameWorkout(a: Workout, b: Workout): boolean {
+  return JSON.stringify(canonical(a)) === JSON.stringify(canonical(b))
+}

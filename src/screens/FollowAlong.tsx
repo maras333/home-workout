@@ -12,6 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { SaveFavouriteButton } from '@/favourites/SaveFavouriteButton'
 import { useControlKeys } from '@/follow-along/keys'
 import { usePlayer, type Player } from '@/follow-along/player'
 import { startingState, useSaveProgress } from '@/follow-along/progress'
@@ -68,7 +69,7 @@ function FollowAlongSession({ workout }: { workout: Workout }) {
   const upNext = nextWork(steps, player.index)
   if (upNext) preload(upNext.set.exercise.gifUrl, { as: 'image' })
 
-  if (player.finished) return <WorkoutComplete total={total} />
+  if (player.finished) return <WorkoutComplete workout={workout} total={total} />
 
   return (
     <div className="flex flex-col gap-4 p-6">
@@ -406,11 +407,12 @@ function SoundToggle({
   )
 }
 
-function WorkoutComplete({ total }: { total: number }) {
+function WorkoutComplete({ workout, total }: { workout: Workout; total: number }) {
   return (
     <div className="flex flex-col items-center gap-4 p-16 text-center">
       <h1 className="text-5xl font-bold">Workout complete</h1>
       <p className="text-muted-foreground">{clockText(total)} planned. Well done!</p>
+      <SaveFavouriteButton workout={workout} />
       <Link to="/" className="text-primary underline-offset-4 hover:underline">
         Plan another Workout
       </Link>

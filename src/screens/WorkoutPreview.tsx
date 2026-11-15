@@ -3,6 +3,7 @@ import { Navigate, useNavigate } from 'react-router'
 import { Shuffle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ExerciseDetailDialog } from '@/components/ExerciseDetailDialog'
+import { SaveFavouriteButton } from '@/favourites/SaveFavouriteButton'
 import { library, type Exercise } from '@/library'
 import {
   canSwap,
@@ -123,6 +124,7 @@ export function WorkoutPreview() {
         <Button variant="secondary" size="lg" onClick={() => generateAnother(workout)}>
           Generate another
         </Button>
+        <SaveFavouriteButton workout={workout} />
         <Button
           size="lg"
           className="px-6"
