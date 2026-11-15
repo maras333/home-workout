@@ -62,4 +62,4 @@ Build a rough working screen driven by a hand-written sample Workout and react t
 
 ### Prototype
 
-Three variants: A "Focus" (huge timer, colour change during rest), B "Timeline" (chosen) and C "Coach" (steps always shown, progress ring). All are on the throwaway branch `prototype/follow-along`, folder `prototype-app/`, at the route `/prototype/follow-along?variant=A|B|C` (run `npm install && npm run dev`). It's throwaway code; rewrite it properly when building.
+Three variants: A "Focus" (huge timer, colour change during rest), B "Timeline" (chosen) and C "Coach" (steps always shown, progress ring). All were on the throwaway branch `prototype/follow-along`, folder `prototype-app/`, at the route `/prototype/follow-along?variant=A|B|C`. It was throwaway code, rewritten properly in build tickets 07 and 08; the branch was deleted after the MVP shipped (last commit `5636e49`).

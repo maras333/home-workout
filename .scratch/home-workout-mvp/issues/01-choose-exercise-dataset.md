@@ -34,4 +34,4 @@ Recommend one.
   - wger: only 5 GIFs
   - Everkinetic: no GIFs, no kettlebell
 
-Full cited findings: `docs/research/exercise-dataset.md` on branch `research/exercise-dataset` (commit `e3f6a3c`).
+Full cited findings were in `docs/research/exercise-dataset.md` on branch `research/exercise-dataset` (commit `e3f6a3c`). That branch was never merged and was deleted after the MVP shipped; the conclusions above are what remains.

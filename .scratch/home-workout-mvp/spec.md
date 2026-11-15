@@ -272,7 +272,7 @@ Everything is stored in `localStorage`, read defensively (a missing or corrupt v
   - every Exercise has a GIF file
   - every Exercise has valid tags (known Muscle groups, Equipment, Difficulty, workout types, Block roles, measure)
   - every workout type × Difficulty has at least 6 bodyweight-only main-Block Exercises
-- **Prior art:** none in this repo yet; these are the first tests. The Follow-along prototype (branch `prototype/follow-along`) shows the behaviour to reproduce, but its code is throwaway and untested.
+- **Prior art:** none in this repo yet; these are the first tests. The Follow-along prototype showed the behaviour to reproduce, but its code was throwaway and untested. Its branch `prototype/follow-along` was deleted after the MVP shipped (last commit `5636e49`).
 
 ## Out of Scope
 
@@ -298,5 +298,5 @@ Everything is stored in `localStorage`, read defensively (a missing or corrupt v
 - **Settled while writing this spec** (not in any ticket): the pause between Blocks is the normal 10 s change-over, and Follow-along opens with a 5 s "Get ready" countdown. Both match the prototype.
 - **Curation is build work, not a decision:** drafting the curation file, inferring chair or bench from names, and hand-tagging Difficulty. It must pass the data check before release.
 - **Known dataset limits, accepted:** GIFs are 180×180 px and blurry when scaled up. Classic warm-up moves like arm circles, jumping jacks and cat-cow aren't in the dataset; warm-up and mobility are built from what is there.
-- **Research and prototype:** the cited dataset research is on branch `research/exercise-dataset`; the three Follow-along layouts are on branch `prototype/follow-along`.
+- **Research and prototype:** the cited dataset research (branch `research/exercise-dataset`, last commit `e3f6a3c`) and the three Follow-along layouts (branch `prototype/follow-along`, last commit `5636e49`) were never merged; both branches were deleted after the MVP shipped. Their conclusions are recorded in decision tickets 01 and 06.
 - **Before deploying:** the repo is already public, and the footer and README credits must ship with the first deploy.

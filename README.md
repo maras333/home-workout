@@ -8,17 +8,23 @@ A hobby project for the author and a few friends: no accounts, no payments, no p
 
 ## Status
 
-**Building.** Planning is done: the MVP spec and its build tickets are in `.scratch/`. The app shell is in place; features land ticket by ticket.
+**MVP done and live.** Every build ticket is closed. What's deliberately left for later is listed under "Out of Scope" in the spec.
 
-- [`.scratch/home-workout-mvp/map.md`](.scratch/home-workout-mvp/map.md) is the planning map: the goal, decisions so far, and what's still open.
-- [`.scratch/home-workout-mvp/issues/`](.scratch/home-workout-mvp/issues/) holds one file per decision ticket, with the question and its answer.
+- [`.scratch/home-workout-mvp/spec.md`](.scratch/home-workout-mvp/spec.md) is the MVP spec: user stories, screens, behaviour, storage and testing decisions.
+- [`.scratch/home-workout-mvp-build/issues/`](.scratch/home-workout-mvp-build/issues/) holds the build tickets, each closed with the choices made.
+- [`.scratch/home-workout-mvp/map.md`](.scratch/home-workout-mvp/map.md) and [`.scratch/home-workout-mvp/issues/`](.scratch/home-workout-mvp/issues/) are the planning map and its decision tickets.
 - [`GLOSSARY.md`](GLOSSARY.md) defines the domain terms (Exercise, Workout Request, Workout, Block, Round, Set, Follow-along…).
 
-## What the MVP will do
+## What it does
 
 - **Workout Request:** pick a workout type (full body, upper body, lower body, core, cardio/HIIT, mobility/stretching), a total time (15/30/45/60 min), a Difficulty (Beginner/Intermediate/Advanced) and any Equipment you have (dumbbells, resistance band, kettlebell, chair or bench). Bodyweight is the default.
 - **Rule-based generation:** a warm-up, a main Block repeated in Rounds, and a cool-down, sized to the time you chose. The logic is deterministic; no LLM.
-- **Follow-along:** a timed player that lists the whole Workout on the left and plays the current Set on the right, with an animated GIF, a countdown, beeps and spoken prompts. If the page reloads, it resumes where you left off.
+- **Workout preview:** see the whole Workout, open any Exercise for its steps, Swap an Exercise you don't like, or generate another.
+- **Follow-along:** lists the whole Workout on the left and plays the current Set on the right, with an animated GIF, a countdown and progress bar. Every Set and rest advances by itself.
+  - Pause/Resume (Space), Skip (N) and Back (B), also as buttons; "End Workout" asks first.
+  - Beeps and a spoken voice (each can be switched off), including "switch sides" on per-side Sets.
+  - If the page reloads, it comes back paused where you left off.
+- **Favourites:** save a Workout you liked (up to 20) and start exactly that Workout again from under the form.
 
 Everything runs in the browser on a laptop. Anything saved stays in the browser.
 
@@ -28,9 +34,7 @@ Vite, React, TypeScript, React Router, Tailwind CSS v4 with shadcn/ui, and Vites
 
 ## Branches
 
-- `main`: the app and its planning documents.
-- `research/exercise-dataset`: cited research behind the choice of exercise dataset. Never merged.
-- `prototype/follow-along`: a throwaway prototype comparing three Follow-along layouts. Run it with `cd prototype-app && npm install && npm run dev`, then open `/prototype/follow-along?variant=A`. Never merged.
+`main` holds the app and its planning documents. The exercise-dataset research and the throwaway Follow-along prototype lived on their own branches and were never merged. Both branches were deleted once the MVP shipped. Their conclusions are kept in decision tickets [01](.scratch/home-workout-mvp/issues/01-choose-exercise-dataset.md) and [06](.scratch/home-workout-mvp/issues/06-prototype-follow-along.md).
 
 ## Credits
 
@@ -51,4 +55,5 @@ npm test           # Vitest + React Testing Library
 npm run typecheck
 npm run lint
 npm run build      # static build in dist/
+npm run check      # typecheck, lint, format check and tests, as CI runs them
 ```
