@@ -1,5 +1,7 @@
 # 06: Swap an Exercise
 
+> Archived: this ticket now lives in GitHub issue [#16](https://github.com/maras333/home-workout/issues/16).
+
 Spec: [Home Workout MVP](../../home-workout-mvp/spec.md), sections "Workout generation module" (Swap) and "Screens"
 
 **What to build:** in the Workout preview I can Swap one Exercise I don't like for another that fits, leaving the rest of the Workout as it was.

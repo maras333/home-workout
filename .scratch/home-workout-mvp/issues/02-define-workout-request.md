@@ -1,5 +1,7 @@
 # Define the Workout Request
 
+> Archived: this ticket now lives in GitHub issue [#2](https://github.com/maras333/home-workout/issues/2).
+
 Type: grilling
 Status: resolved
 Map: [Home Workout MVP](../map.md)

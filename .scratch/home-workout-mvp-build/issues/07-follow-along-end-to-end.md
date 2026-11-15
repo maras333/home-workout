@@ -1,5 +1,7 @@
 # 07: Follow-along: play a Workout end to end
 
+> Archived: this ticket now lives in GitHub issue [#17](https://github.com/maras333/home-workout/issues/17).
+
 Spec: [Home Workout MVP](../../home-workout-mvp/spec.md), sections "Screens" (Follow-along) and "Follow-along behaviour"; throwaway prototype, variant B "Timeline" (its branch `prototype/follow-along` was deleted after the MVP shipped; last commit `5636e49`)
 
 **What to build:** I press Start Workout and the app walks me through the whole Workout hands-free, from a "Get ready" countdown to the "Workout complete" screen.

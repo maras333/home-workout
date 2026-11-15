@@ -1,5 +1,7 @@
 # 12: Connect Vercel and deploy
 
+> Archived: this ticket now lives in GitHub issue [#22](https://github.com/maras333/home-workout/issues/22).
+
 Spec: [Home Workout MVP](../../home-workout-mvp/spec.md), section "Stack and hosting"
 
 **What to build:** the app is live on Vercel and redeploys automatically from `main`, so every finished ticket can be tried in a real browser. HITL: connecting the account is the human's step.

@@ -1,5 +1,7 @@
 # Decide whether a browsable Exercise library page is in the MVP
 
+> Archived: this ticket now lives in GitHub issue [#10](https://github.com/maras333/home-workout/issues/10).
+
 Type: grilling
 Status: resolved
 Map: [Home Workout MVP](../map.md)

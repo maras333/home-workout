@@ -1,5 +1,7 @@
 # Choose an exercise dataset with GIFs
 
+> Archived: this ticket now lives in GitHub issue [#1](https://github.com/maras333/home-workout/issues/1).
+
 Type: research
 Status: resolved
 Map: [Home Workout MVP](../map.md)

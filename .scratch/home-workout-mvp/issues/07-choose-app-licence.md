@@ -1,5 +1,7 @@
 # Choose the app's licence
 
+> Archived: this ticket now lives in GitHub issue [#7](https://github.com/maras333/home-workout/issues/7).
+
 Type: grilling
 Status: resolved
 Map: [Home Workout MVP](../map.md)

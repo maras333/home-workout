@@ -1,5 +1,7 @@
 # 08: Follow-along controls and sound
 
+> Archived: this ticket now lives in GitHub issue [#18](https://github.com/maras333/home-workout/issues/18).
+
 Spec: [Home Workout MVP](../../home-workout-mvp/spec.md), section "Follow-along behaviour"
 
 **What to build:** during Follow-along I can pause, skip and go back, I'm told when to switch sides, and I can follow by ear with beeps and a voice that I can switch off.

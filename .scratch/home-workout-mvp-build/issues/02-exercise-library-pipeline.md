@@ -1,5 +1,7 @@
 # 02: Exercise library pipeline with a starter set
 
+> Archived: this ticket now lives in GitHub issue [#12](https://github.com/maras333/home-workout/issues/12).
+
 Spec: [Home Workout MVP](../../home-workout-mvp/spec.md), section "Exercise library module"
 
 **What to build:** the full path from the pinned ExerciseDB snapshot to a typed Exercise library inside the app, proven with a small starter set (about 20–30 Exercises) that covers every workout type and Block role well enough to generate a Workout. Later the full library ([11: Curate the full Exercise library](11-curate-full-exercise-library.md)) only grows the id list and the tags.

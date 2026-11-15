@@ -1,5 +1,7 @@
 # Choose the stack on Vercel
 
+> Archived: this ticket now lives in GitHub issue [#5](https://github.com/maras333/home-workout/issues/5).
+
 Type: grilling
 Status: resolved
 Map: [Home Workout MVP](../map.md)

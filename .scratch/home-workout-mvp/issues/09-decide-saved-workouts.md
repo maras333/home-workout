@@ -1,5 +1,7 @@
 # Decide whether saved Workouts are in the MVP
 
+> Archived: this ticket now lives in GitHub issue [#9](https://github.com/maras333/home-workout/issues/9).
+
 Type: grilling
 Status: resolved
 Map: [Home Workout MVP](../map.md)

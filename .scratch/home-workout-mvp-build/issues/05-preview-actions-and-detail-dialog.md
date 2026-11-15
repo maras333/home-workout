@@ -1,5 +1,7 @@
 # 05: Preview actions and the Exercise detail dialog
 
+> Archived: this ticket now lives in GitHub issue [#15](https://github.com/maras333/home-workout/issues/15).
+
 Spec: [Home Workout MVP](../../home-workout-mvp/spec.md), section "Screens"
 
 **What to build:** from the Workout preview I can reroll the Workout, go back to change my Request, and click any Exercise to see how it's done.

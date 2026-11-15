@@ -1,5 +1,7 @@
 # Define the Exercise library shape
 
+> Archived: this ticket now lives in GitHub issue [#3](https://github.com/maras333/home-workout/issues/3).
+
 Type: grilling
 Status: resolved
 Blocked by: 01

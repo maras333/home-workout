@@ -1,40 +1,43 @@
-# Issue tracker: Local Markdown
+# Issue tracker: GitHub Issues
 
-Issues and specs for this repo live as markdown files in `.scratch/`.
+Issues for this repo live in GitHub Issues on `maras333/home-workout`; use the `gh` CLI. The repo is public, so everything written there is public.
+
+Specs stay as markdown in the repo: `.scratch/<feature-slug>/spec.md`. The `.scratch/*/issues/` files are the archive of the MVP's tickets, each migrated to an issue (decisions #1–#10, build tickets #11–#22) and pointing at it. Write new tickets as issues.
 
 ## Conventions
 
-- One feature per directory: `.scratch/<feature-slug>/`
-- The spec is `.scratch/<feature-slug>/spec.md`
-- Implementation issues are one file per ticket at `.scratch/<feature-slug>/issues/<NN>-<slug>.md`, numbered from `01`, never a single combined tickets file
-- Triage state is recorded as a `Status:` line near the top of each issue file (see `triage-labels.md` for the role strings)
-- Comments and conversation history append to the bottom of the file under a `## Comments` heading
+- One issue per ticket, never a single combined tickets issue.
+- Title: what to build or decide, in the domain words of `GLOSSARY.md`.
+- Body: a link to the spec section it implements, `**Blocked by:** #N, #N` (or `None`), then the acceptance criteria as a checklist.
+- One type label: `mvp-build` (implementation) or `decision` (a planning question). Add a new type label when a new effort needs one.
+- Triage state is a label from `triage-labels.md`.
+- Conversation goes in issue comments.
 
 ## Closing a ticket
 
 When a ticket's work is committed:
 
-1. Tick every checkbox the work satisfies. If one stays open, say why under `## Comments`.
-2. Set the `Status:` line to `done`.
-3. Under `## Comments`, record the commits plus the choices made and anything later tickets need to know.
+1. Tick every checklist item the work satisfies. If one stays open, say why in a comment.
+2. Comment with the commits, the choices made, and anything later tickets need to know.
+3. Close it as completed: `gh issue close <N> --reason completed` (or `--reason "not planned"` with the `wontfix` label).
 
-A ticket is open while its `Status:` line says anything other than `done` or `wontfix`.
+A ticket is open while its issue is open.
 
 ## When a skill says "publish to the issue tracker"
 
-Create a new file under `.scratch/<feature-slug>/` (creating the directory if needed).
+Create an issue: `gh issue create --title … --body-file … --label …`.
 
 ## When a skill says "fetch the relevant ticket"
 
-Read the file at the referenced path. The user will normally pass the path or the issue number directly.
+`gh issue view <N> --comments`. The user will normally pass the issue number or URL.
 
 ## Wayfinding operations
 
-Used by `/wayfinder`. The **map** is a file with one **child** file per ticket.
+Used by `/wayfinder`. The **map** is one issue with one **child** issue per question.
 
-- **Map**: `.scratch/<effort>/map.md` (the Notes / Decisions-so-far / Fog body).
-- **Child ticket**: `.scratch/<effort>/issues/NN-<slug>.md`, numbered from `01`, with the question in the body. A `Type:` line records the ticket type (`research`/`prototype`/`grilling`/`task`); a `Status:` line records `claimed`/`resolved`.
-- **Blocking**: a `Blocked by: NN, NN` line near the top. A ticket is unblocked when every file it lists is `resolved`.
-- **Frontier**: scan `.scratch/<effort>/issues/` for files that are open, unblocked, and unclaimed; first by number wins.
-- **Claim**: set `Status: claimed` and save before any work.
-- **Resolve**: append the answer under an `## Answer` heading, set `Status: resolved`, then append a context pointer (gist + link) to the map's Decisions-so-far in `map.md`.
+- **Map**: an issue labelled `map` holding the Notes / Decisions-so-far / Fog body.
+- **Child ticket**: an issue labelled `decision` with the question in the body and `Map: #N` on its first line. A `Type:` line records the ticket type (`research`/`prototype`/`grilling`/`task`).
+- **Blocking**: a `Blocked by: #N, #N` line near the top. A child is unblocked when every issue it lists is closed.
+- **Frontier**: open children of the map that are unblocked and unassigned; lowest number wins.
+- **Claim**: assign yourself (`gh issue edit <N> --add-assignee @me`) before any work.
+- **Resolve**: comment the answer under an `## Answer` heading, close the issue, then add a context pointer (gist + `#N`) to the map's Decisions-so-far.

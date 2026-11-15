@@ -1,5 +1,7 @@
 # Design rule-based Workout generation
 
+> Archived: this ticket now lives in GitHub issue [#4](https://github.com/maras333/home-workout/issues/4).
+
 Type: grilling
 Status: resolved
 Blocked by: 02, 03

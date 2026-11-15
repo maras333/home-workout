@@ -11,8 +11,8 @@ A hobby project for the author and a few friends: no accounts, no payments, no p
 **MVP done and live.** Every build ticket is closed. What's deliberately left for later is listed under "Out of Scope" in the spec.
 
 - [`.scratch/home-workout-mvp/spec.md`](.scratch/home-workout-mvp/spec.md) is the MVP spec: user stories, screens, behaviour, storage and testing decisions.
-- [`.scratch/home-workout-mvp-build/issues/`](.scratch/home-workout-mvp-build/issues/) holds the build tickets, each closed with the choices made.
-- [`.scratch/home-workout-mvp/map.md`](.scratch/home-workout-mvp/map.md) and [`.scratch/home-workout-mvp/issues/`](.scratch/home-workout-mvp/issues/) are the planning map and its decision tickets.
+- [GitHub Issues](https://github.com/maras333/home-workout/issues?q=is%3Aissue) track the work: the MVP's decision tickets (#1–#10, label `decision`) and build tickets (#11–#22, label `mvp-build`), each closed with the choices made. Their original markdown files stay in `.scratch/` as an archive.
+- [`.scratch/home-workout-mvp/map.md`](.scratch/home-workout-mvp/map.md) is the planning map.
 - [`GLOSSARY.md`](GLOSSARY.md) defines the domain terms (Exercise, Workout Request, Workout, Block, Round, Set, Follow-along…).
 
 ## What it does

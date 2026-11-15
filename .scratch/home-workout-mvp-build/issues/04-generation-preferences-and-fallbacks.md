@@ -1,5 +1,7 @@
 # 04: Generation preferences and fallbacks
 
+> Archived: this ticket now lives in GitHub issue [#14](https://github.com/maras333/home-workout/issues/14).
+
 Spec: [Home Workout MVP](../../home-workout-mvp/spec.md), section "Workout generation module"
 
 **What to build:** Workouts that feel well put together and never fail. The main Block favours my exact Difficulty, uses my Equipment, rotates Muscle groups; warm-up and cool-down match the main Block; and a tiny pool still yields a Workout.

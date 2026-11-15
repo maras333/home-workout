@@ -1,5 +1,7 @@
 # Prototype the Follow-along screen
 
+> Archived: this ticket now lives in GitHub issue [#6](https://github.com/maras333/home-workout/issues/6).
+
 Type: prototype
 Status: resolved
 Blocked by: 04

@@ -1,5 +1,7 @@
 # 09: Resume after reload and End Workout
 
+> Archived: this ticket now lives in GitHub issue [#19](https://github.com/maras333/home-workout/issues/19).
+
 Spec: [Home Workout MVP](../../home-workout-mvp/spec.md), sections "Follow-along behaviour" and "Browser storage"
 
 **What to build:** if the page reloads mid-Workout I come back where I was, and I can end a Workout early without it haunting me later.

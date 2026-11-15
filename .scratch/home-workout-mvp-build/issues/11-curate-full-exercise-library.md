@@ -1,5 +1,7 @@
 # 11: Curate the full Exercise library
 
+> Archived: this ticket now lives in GitHub issue [#21](https://github.com/maras333/home-workout/issues/21).
+
 Spec: [Home Workout MVP](../../home-workout-mvp/spec.md), section "Exercise library module" and "Further Notes"
 
 **What to build:** the real library of about 120–150 Exercises the MVP ships with, tagged and reviewed, so every workout type is fully servable with bodyweight alone at every Difficulty. HITL: an agent drafts, the human reviews.

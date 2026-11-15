@@ -1,5 +1,7 @@
 # 10: Favourites
 
+> Archived: this ticket now lives in GitHub issue [#20](https://github.com/maras333/home-workout/issues/20).
+
 Spec: [Home Workout MVP](../../home-workout-mvp/spec.md), sections "Screens" and "Browser storage"; decision in [Decide whether saved Workouts are in the MVP](../../home-workout-mvp/issues/09-decide-saved-workouts.md)
 
 **What to build:** I can save a Workout I liked as a Favourite and later start exactly that Workout again from under the Workout Request form.

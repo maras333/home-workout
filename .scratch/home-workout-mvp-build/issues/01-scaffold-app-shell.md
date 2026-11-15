@@ -1,5 +1,7 @@
 # 01: Scaffold the app shell with the credit footer
 
+> Archived: this ticket now lives in GitHub issue [#11](https://github.com/maras333/home-workout/issues/11).
+
 Spec: [Home Workout MVP](../../home-workout-mvp/spec.md)
 
 **What to build:** a deployable, empty app on the decided stack. Opening it shows placeholder screens for the Workout Request form, the Workout preview (`/workout`) and Follow-along, each with the ExerciseDB credit footer. Reloading any route works on Vercel. The test setup and one passing app-level test exist, so later tickets only add tests.

@@ -1,5 +1,7 @@
 # Map: Home Workout MVP
 
+> Archived: planning is finished. Its decision tickets now live in GitHub issues #1–#10 (label `decision`).
+
 Label: wayfinder:map
 
 ## Destination

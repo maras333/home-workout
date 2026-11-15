@@ -1,5 +1,7 @@
 # 03: Generate a basic Workout and preview it
 
+> Archived: this ticket now lives in GitHub issue [#13](https://github.com/maras333/home-workout/issues/13).
+
 Spec: [Home Workout MVP](../../home-workout-mvp/spec.md), sections "Workout model", "Workout generation module", "Screens", "Browser storage"
 
 **What to build:** the first end-to-end flow. I fill in the Workout Request form, press Generate, and land on the Workout preview showing a correctly sized Workout. Generation covers the core rules only; preferences and fallbacks come in [04: Generation preferences and fallbacks](04-generation-preferences-and-fallbacks.md).

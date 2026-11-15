@@ -1,5 +1,7 @@
 # Define the Workout preview screen
 
+> Archived: this ticket now lives in GitHub issue [#8](https://github.com/maras333/home-workout/issues/8).
+
 Type: grilling
 Status: resolved
 Map: [Home Workout MVP](../map.md)
