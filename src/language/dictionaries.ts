@@ -1,4 +1,5 @@
 import type { Difficulty, Equipment, MuscleGroup, WorkoutType } from '@/library'
+import type { BlockName, RestLabel } from '@/workout/follow-along'
 import type { Language } from './types'
 
 /** Every user-facing string, one dictionary per Language; the type checker keeps both complete. */
@@ -50,6 +51,37 @@ export type Dictionary = {
     equipment: string
     difficulty: string
     close: string
+  }
+  followAlong: {
+    blocks: Record<BlockName, string>
+    rests: Record<RestLabel, string>
+    getReady: string
+    upNext: string
+    round: (round: number, rounds: number) => string
+    /** e.g. "Side 1 of 2", "Side 2 of 2 — switch!" */
+    side: (side: 1 | 2, switching: boolean) => string
+    now: string
+    timeLeft: string
+    setProgress: string
+    restProgress: string
+    /** Read out before "1:05 / 2:35". */
+    timeDone: string
+    /** Read out before a finished Set in the timeline. */
+    done: string
+    back: string
+    pause: string
+    resume: string
+    skip: string
+    endWorkout: string
+    endTitle: string
+    endDescription: string
+    keepGoing: string
+    beeps: string
+    voice: string
+    soundTitle: (sound: string, on: boolean) => string
+    complete: string
+    planned: (clock: string) => string
+    planAnother: string
   }
   footer: {
     credit: string
@@ -147,6 +179,38 @@ const en: Dictionary = {
     difficulty: 'Difficulty:',
     close: 'Close',
   },
+  followAlong: {
+    blocks: { 'Warm-up': 'Warm-up', Main: 'Main', 'Cool-down': 'Cool-down' },
+    rests: {
+      'Change-over': 'Change-over',
+      Rest: 'Rest',
+      'Rest between Rounds': 'Rest between Rounds',
+    },
+    getReady: 'Get ready',
+    upNext: 'Up next',
+    round: (round, rounds) => `Round ${round} of ${rounds}`,
+    side: (side, switching) => `Side ${side} of 2${switching ? ' — switch!' : ''}`,
+    now: 'Now',
+    timeLeft: 'Time left',
+    setProgress: 'Set progress',
+    restProgress: 'Rest progress',
+    timeDone: 'Time done:',
+    done: 'Done:',
+    back: 'Back',
+    pause: 'Pause',
+    resume: 'Resume',
+    skip: 'Skip',
+    endWorkout: 'End Workout',
+    endTitle: 'End this Workout?',
+    endDescription: 'Your place in it is forgotten. You can start it again from the preview.',
+    keepGoing: 'Keep going',
+    beeps: 'Beeps',
+    voice: 'Voice',
+    soundTitle: (sound, on) => `${sound} ${on ? 'on' : 'off'}`,
+    complete: 'Workout complete',
+    planned: (clock) => `${clock} planned. Well done!`,
+    planAnother: 'Plan another Workout',
+  },
   footer: {
     credit: 'Exercise data & GIFs:',
     sourceCode: 'Source code',
@@ -225,6 +289,38 @@ const pl: Dictionary = {
     equipment: 'Sprzęt:',
     difficulty: 'Poziom:',
     close: 'Zamknij',
+  },
+  followAlong: {
+    blocks: { 'Warm-up': 'Rozgrzewka', Main: 'Część główna', 'Cool-down': 'Wyciszenie' },
+    rests: {
+      'Change-over': 'Zmiana',
+      Rest: 'Przerwa',
+      'Rest between Rounds': 'Przerwa między rundami',
+    },
+    getReady: 'Przygotuj się',
+    upNext: 'Następne',
+    round: (round, rounds) => `Runda ${round} z ${rounds}`,
+    side: (side, switching) => `Strona ${side} z 2${switching ? ' — zmiana!' : ''}`,
+    now: 'Teraz',
+    timeLeft: 'Pozostały czas',
+    setProgress: 'Postęp serii',
+    restProgress: 'Postęp przerwy',
+    timeDone: 'Czas za tobą:',
+    done: 'Zrobione:',
+    back: 'Wstecz',
+    pause: 'Pauza',
+    resume: 'Wznów',
+    skip: 'Pomiń',
+    endWorkout: 'Zakończ trening',
+    endTitle: 'Zakończyć ten trening?',
+    endDescription: 'Twoje miejsce w nim przepadnie. Możesz zacząć go od nowa z podglądu.',
+    keepGoing: 'Trenuj dalej',
+    beeps: 'Sygnały',
+    voice: 'Głos',
+    soundTitle: (sound, on) => `${sound}: ${on ? 'włączone' : 'wyłączone'}`,
+    complete: 'Trening zakończony',
+    planned: (clock) => `Zaplanowano ${clock}. Dobra robota!`,
+    planAnother: 'Zaplanuj kolejny trening',
   },
   footer: {
     credit: 'Dane ćwiczeń i GIF-y:',

@@ -590,7 +590,8 @@ describe('Follow-along voice', () => {
     wait(25)
 
     expect(spoken[spoken.length - 1]).toContain('Next: pompka')
-    expect(within(nowPlaying()).getByRole('img', { name: 'pompka' })).toBeInTheDocument()
+    const now = screen.getByRole('region', { name: 'Teraz' })
+    expect(within(now).getByRole('img', { name: 'pompka' })).toBeInTheDocument()
   })
 
   it('waits for Resume before announcing a Set reached while paused', async () => {

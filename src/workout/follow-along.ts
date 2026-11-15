@@ -85,16 +85,14 @@ export function switchSecond(step: WorkStep): number | null {
 /** How long "— switch!" stays up after the side switch. */
 const SWITCH_SHOWN_SECONDS = 3
 
-export type Side = { text: string; switching: boolean }
+export type Side = { side: 1 | 2; switching: boolean }
 
-/** e.g. "Side 1 of 2", "Side 2 of 2 — switch!" just after the switch; null when not per side. */
+/** The side a per-side Set is on, `switching` just after the switch; null when not per side. */
 export function sideAt(step: WorkStep, elapsed: number): Side | null {
   const half = switchSecond(step)
   if (half === null) return null
-  if (elapsed < half) return { text: 'Side 1 of 2', switching: false }
-  return elapsed < half + SWITCH_SHOWN_SECONDS
-    ? { text: 'Side 2 of 2 — switch!', switching: true }
-    : { text: 'Side 2 of 2', switching: false }
+  if (elapsed < half) return { side: 1, switching: false }
+  return { side: 2, switching: elapsed < half + SWITCH_SHOWN_SECONDS }
 }
 
 /** e.g. "1:05" */

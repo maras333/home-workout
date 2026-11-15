@@ -13,7 +13,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { SaveFavouriteButton } from '@/favourites/SaveFavouriteButton'
-import { useLanguage } from '@/language'
+import { useLanguage, useText } from '@/language'
 import { exerciseText } from '@/library'
 import { useControlKeys } from '@/follow-along/keys'
 import { usePlayer, type Player } from '@/follow-along/player'
@@ -118,10 +118,11 @@ function Timeline({
   player: Player
   total: number
 }) {
+  const text = useText()
   return (
     <div className="flex flex-col gap-4">
       <p className="text-muted-foreground text-sm tabular-nums">
-        <span className="sr-only">Time done: </span>
+        <span className="sr-only">{text.followAlong.timeDone} </span>
         {clockText(timeDone(steps, player))} / {clockText(total)}
       </p>
       {BLOCK_NAMES.map((block) => {
@@ -143,16 +144,17 @@ function TimelineBlock({
   current: number
 }) {
   const headingId = useId()
+  const text = useText().followAlong
   return (
     <section aria-labelledby={headingId} className="flex flex-col gap-1">
       <h2 id={headingId} className="text-sm font-semibold tracking-wide uppercase">
-        {block}
+        {text.blocks[block]}
       </h2>
       {groups.map((group) => (
         <div key={group.round ?? 0} className="flex flex-col gap-1">
           {group.round !== undefined && (
             <h3 className="text-muted-foreground mt-1 text-xs">
-              Round {group.round} of {group.rounds}
+              {text.round(group.round, group.rounds ?? group.round)}
             </h3>
           )}
           <ol className="flex flex-col gap-1">
@@ -172,6 +174,7 @@ function TimelineBlock({
 
 function TimelineRow({ set, state }: { set: WorkoutSet; state: 'done' | 'now' | 'todo' }) {
   const { language } = useLanguage()
+  const text = useText().followAlong
   return (
     <li
       aria-current={state === 'now' ? 'step' : undefined}
@@ -189,15 +192,16 @@ function TimelineRow({ set, state }: { set: WorkoutSet; state: 'done' | 'now' | 
         height={32}
         className="size-8 rounded bg-white"
       />
-      {state === 'done' && <span className="sr-only">Done: </span>}
+      {state === 'done' && <span className="sr-only">{text.done} </span>}
       <span className="flex-1 capitalize">{exerciseText(set.exercise, language).name}</span>
-      <span className="tabular-nums">{targetText(set, 'en')}</span>
+      <span className="tabular-nums">{targetText(set, language)}</span>
     </li>
   )
 }
 
 function NowPlaying({ player, upNext }: { player: Player; upNext: WorkStep | null }) {
   const { language } = useLanguage()
+  const text = useText().followAlong
   const step = player.step
   if (!step) return null
   const isWork = step.kind === 'work'
@@ -207,7 +211,7 @@ function NowPlaying({ player, upNext }: { player: Player; upNext: WorkStep | nul
   const side = isWork ? sideAt(step, player.elapsed) : null
 
   return (
-    <section aria-label="Now" className="flex flex-1 flex-col items-center gap-6">
+    <section aria-label={text.now} className="flex flex-1 flex-col items-center gap-6">
       <div className="flex w-full max-w-3xl flex-col items-center gap-8 md:flex-row">
         {shown && (
           <img
@@ -222,11 +226,12 @@ function NowPlaying({ player, upNext }: { player: Player; upNext: WorkStep | nul
           {isWork ? (
             <>
               <p className="text-muted-foreground text-sm tracking-widest uppercase">
-                {step.block}
-                {step.round !== undefined && ` · Round ${step.round} of ${step.rounds}`}
+                {text.blocks[step.block]}
+                {step.round !== undefined &&
+                  ` · ${text.round(step.round, step.rounds ?? step.round)}`}
               </p>
               <h1 className="text-4xl font-bold capitalize">{shownName}</h1>
-              <p className="text-xl">{targetText(step.set, 'en')}</p>
+              <p className="text-xl">{targetText(step.set, language)}</p>
               {side && (
                 <p
                   className={cn(
@@ -236,27 +241,29 @@ function NowPlaying({ player, upNext }: { player: Player; upNext: WorkStep | nul
                       : 'bg-muted text-muted-foreground',
                   )}
                 >
-                  {side.text}
+                  {text.side(side.side, side.switching)}
                 </p>
               )}
             </>
           ) : (
             <>
               <h1 className="text-4xl font-bold">
-                {step.kind === 'ready' ? 'Get ready' : step.label}
+                {step.kind === 'ready' ? text.getReady : text.rests[step.label]}
               </h1>
               {shown && (
                 <>
-                  <p className="text-muted-foreground text-sm tracking-widest uppercase">Up next</p>
+                  <p className="text-muted-foreground text-sm tracking-widest uppercase">
+                    {text.upNext}
+                  </p>
                   <p className="text-2xl font-semibold capitalize">{shownName}</p>
-                  <p className="text-xl">{targetText(shown.set, 'en')}</p>
+                  <p className="text-xl">{targetText(shown.set, language)}</p>
                 </>
               )}
             </>
           )}
           <p
             role="timer"
-            aria-label="Time left"
+            aria-label={text.timeLeft}
             className="font-mono text-7xl font-bold tabular-nums"
           >
             {clockText(player.remaining)}
@@ -265,7 +272,7 @@ function NowPlaying({ player, upNext }: { player: Player; upNext: WorkStep | nul
       </div>
       <div
         role="progressbar"
-        aria-label={isWork ? 'Set progress' : 'Rest progress'}
+        aria-label={isWork ? text.setProgress : text.restProgress}
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={progress}
@@ -282,15 +289,16 @@ function NowPlaying({ player, upNext }: { player: Player; upNext: WorkStep | nul
 }
 
 function Controls({ player }: { player: Player }) {
+  const text = useText().followAlong
   return (
     <div className="flex items-center gap-3">
-      <ControlButton label="Back" shortcut="B" onClick={player.back} variant="outline" />
+      <ControlButton label={text.back} shortcut="B" onClick={player.back} variant="outline" />
       <ControlButton
-        label={player.paused ? 'Resume' : 'Pause'}
+        label={player.paused ? text.resume : text.pause}
         shortcut="Space"
         onClick={player.togglePause}
       />
-      <ControlButton label="Skip" shortcut="N" onClick={player.skip} variant="outline" />
+      <ControlButton label={text.skip} shortcut="N" onClick={player.skip} variant="outline" />
     </div>
   )
 }
@@ -330,6 +338,7 @@ function EndWorkout({
   onOpenChange: (open: boolean) => void
 }) {
   const navigate = useNavigate()
+  const text = useText().followAlong
   const end = () => {
     clearProgress()
     navigate('/')
@@ -337,22 +346,20 @@ function EndWorkout({
   return (
     <>
       <Button variant="destructive" className="self-start" onClick={() => onOpenChange(true)}>
-        End Workout
+        {text.endWorkout}
       </Button>
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent showCloseButton={false}>
           <DialogHeader>
-            <DialogTitle>End this Workout?</DialogTitle>
-            <DialogDescription>
-              Your place in it is forgotten. You can start it again from the preview.
-            </DialogDescription>
+            <DialogTitle>{text.endTitle}</DialogTitle>
+            <DialogDescription>{text.endDescription}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <DialogClose asChild>
-              <Button variant="outline">Keep going</Button>
+              <Button variant="outline">{text.keepGoing}</Button>
             </DialogClose>
             <Button variant="destructive" onClick={end}>
-              End Workout
+              {text.endWorkout}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -368,16 +375,17 @@ function SoundToggles({
   settings: SoundSettings
   onChange: (settings: SoundSettings) => void
 }) {
+  const text = useText().followAlong
   return (
     <div className="flex justify-end gap-2">
       <SoundToggle
-        label="Beeps"
+        label={text.beeps}
         icon="🔔"
         on={settings.beeps}
         onToggle={() => onChange({ ...settings, beeps: !settings.beeps })}
       />
       <SoundToggle
-        label="Voice"
+        label={text.voice}
         icon="🗣"
         on={settings.voice}
         onToggle={() => onChange({ ...settings, voice: !settings.voice })}
@@ -397,13 +405,14 @@ function SoundToggle({
   on: boolean
   onToggle: () => void
 }) {
+  const text = useText().followAlong
   return (
     <Button
       variant={on ? 'secondary' : 'ghost'}
       size="icon-lg"
       aria-label={label}
       aria-pressed={on}
-      title={`${label} ${on ? 'on' : 'off'}`}
+      title={text.soundTitle(label, on)}
       onClick={onToggle}
       className={cn('text-lg', !on && 'opacity-40 grayscale')}
     >
@@ -413,13 +422,14 @@ function SoundToggle({
 }
 
 function WorkoutComplete({ workout, total }: { workout: Workout; total: number }) {
+  const text = useText().followAlong
   return (
     <div className="flex flex-col items-center gap-4 p-16 text-center">
-      <h1 className="text-5xl font-bold">Workout complete</h1>
-      <p className="text-muted-foreground">{clockText(total)} planned. Well done!</p>
+      <h1 className="text-5xl font-bold">{text.complete}</h1>
+      <p className="text-muted-foreground">{text.planned(clockText(total))}</p>
       <SaveFavouriteButton workout={workout} />
       <Link to="/" className="text-primary underline-offset-4 hover:underline">
-        Plan another Workout
+        {text.planAnother}
       </Link>
     </div>
   )
