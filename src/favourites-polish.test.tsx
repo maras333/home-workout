@@ -51,10 +51,10 @@ function storeFavourites(count: number, change: (workout: Workout) => Workout = 
   return saved
 }
 
-/** Skips through every Set and rest to the "Workout complete" screen. */
+/** Skips through every Set and rest to the "Trening zakończony" screen, in Polish. */
 async function finishWorkout(user: User) {
-  while (!screen.queryByRole('heading', { name: 'Workout complete' })) {
-    await user.click(screen.getByRole('button', { name: 'Skip' }))
+  while (!screen.queryByRole('heading', { name: 'Trening zakończony' })) {
+    await user.click(screen.getByRole('button', { name: 'Pomiń' }))
   }
 }
 
@@ -128,7 +128,7 @@ describe('Favourites in Polish', () => {
     expect(storedFavourites()).toHaveLength(1)
   })
 
-  it('saves from the "Workout complete" screen with "Zapisz"', async () => {
+  it('saves from the "Trening zakończony" screen with "Zapisz"', async () => {
     const user = userEvent.setup()
     choosePolish()
     localStorage.setItem(WORKOUT_KEY, JSON.stringify(workout()))
