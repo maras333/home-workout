@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { ExerciseDetailDialog } from '@/components/ExerciseDetailDialog'
 import { SaveFavouriteButton } from '@/favourites/SaveFavouriteButton'
 import { useLanguage, useText } from '@/language'
-import { library, type Exercise } from '@/library'
+import { exerciseText, library, type Exercise } from '@/library'
 import {
   canSwap,
   clearProgress,
@@ -47,35 +47,38 @@ function BlockSection({
         {title}
       </h2>
       <ul className="flex flex-col divide-y rounded-lg border">
-        {sets.map((set, index) => (
-          <li key={`${index}-${set.exercise.id}`} className="flex items-center gap-2 pr-2">
-            <button
-              type="button"
-              onClick={() => onOpenExercise(set.exercise)}
-              className="flex flex-1 cursor-pointer items-center gap-4 p-2 text-left outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50"
-            >
-              <img
-                src={set.exercise.gifUrl}
-                alt={set.exercise.name}
-                loading="lazy"
-                width={56}
-                height={56}
-                className="size-14 rounded"
-              />
-              <span className="flex-1 capitalize">{set.exercise.name}</span>
-              <span className="text-muted-foreground">{targetText(set, language)}</span>
-            </button>
-            <Button
-              variant="outline"
-              aria-label={text.swapExercise(set.exercise.name)}
-              disabled={!canSwapAt(index)}
-              onClick={() => onSwap(index)}
-            >
-              <Shuffle aria-hidden="true" />
-              {text.swap}
-            </Button>
-          </li>
-        ))}
+        {sets.map((set, index) => {
+          const { name } = exerciseText(set.exercise, language)
+          return (
+            <li key={`${index}-${set.exercise.id}`} className="flex items-center gap-2 pr-2">
+              <button
+                type="button"
+                onClick={() => onOpenExercise(set.exercise)}
+                className="flex flex-1 cursor-pointer items-center gap-4 p-2 text-left outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50"
+              >
+                <img
+                  src={set.exercise.gifUrl}
+                  alt={name}
+                  loading="lazy"
+                  width={56}
+                  height={56}
+                  className="size-14 rounded"
+                />
+                <span className="flex-1 capitalize">{name}</span>
+                <span className="text-muted-foreground">{targetText(set, language)}</span>
+              </button>
+              <Button
+                variant="outline"
+                aria-label={text.swapExercise(name)}
+                disabled={!canSwapAt(index)}
+                onClick={() => onSwap(index)}
+              >
+                <Shuffle aria-hidden="true" />
+                {text.swap}
+              </Button>
+            </li>
+          )
+        })}
       </ul>
     </section>
   )

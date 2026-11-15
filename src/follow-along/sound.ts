@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useLanguage } from '@/language'
 import { loadSoundSettings, saveSoundSettings, type SoundSettings } from '@/workout'
 import type { Step } from '@/workout/follow-along'
 import { cueAt, type Beep } from './cues'
@@ -106,6 +107,7 @@ export function useCues(steps: readonly Step[], state: PlayerState, settings: So
   const { index, elapsed, paused } = state
   const { beeps, voice } = settings
   const audio = useAudio()
+  const { language } = useLanguage()
   // Opening paused (resumed progress), the cue waits for Resume; otherwise it already passed.
   const played = useRef<string | null>(paused ? null : `${index}:${elapsed}`)
 
@@ -114,13 +116,13 @@ export function useCues(steps: readonly Step[], state: PlayerState, settings: So
     if (paused || played.current === at) return
     played.current = at
 
-    const cue = cueAt(steps, { index, elapsed })
+    const cue = cueAt(steps, { index, elapsed }, language)
     if (cue.beep && beeps) {
       const context = audio()
       if (context) playTones(context, TONES[cue.beep])
     }
     if (cue.speech && voice) say(cue.speech)
-  }, [steps, index, elapsed, paused, beeps, voice, audio])
+  }, [steps, index, elapsed, paused, beeps, voice, audio, language])
 
   useEffect(() => {
     if (!voice) stopSpeaking()

@@ -13,6 +13,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { SaveFavouriteButton } from '@/favourites/SaveFavouriteButton'
+import { useLanguage } from '@/language'
+import { exerciseText } from '@/library'
 import { useControlKeys } from '@/follow-along/keys'
 import { usePlayer, type Player } from '@/follow-along/player'
 import { startingState, useSaveProgress } from '@/follow-along/progress'
@@ -169,6 +171,7 @@ function TimelineBlock({
 }
 
 function TimelineRow({ set, state }: { set: WorkoutSet; state: 'done' | 'now' | 'todo' }) {
+  const { language } = useLanguage()
   return (
     <li
       aria-current={state === 'now' ? 'step' : undefined}
@@ -187,17 +190,19 @@ function TimelineRow({ set, state }: { set: WorkoutSet; state: 'done' | 'now' | 
         className="size-8 rounded bg-white"
       />
       {state === 'done' && <span className="sr-only">Done: </span>}
-      <span className="flex-1 capitalize">{set.exercise.name}</span>
+      <span className="flex-1 capitalize">{exerciseText(set.exercise, language).name}</span>
       <span className="tabular-nums">{targetText(set, 'en')}</span>
     </li>
   )
 }
 
 function NowPlaying({ player, upNext }: { player: Player; upNext: WorkStep | null }) {
+  const { language } = useLanguage()
   const step = player.step
   if (!step) return null
   const isWork = step.kind === 'work'
   const shown = isWork ? step : upNext
+  const shownName = shown && exerciseText(shown.set.exercise, language).name
   const progress = Math.round((player.elapsed / step.seconds) * 100)
   const side = isWork ? sideAt(step, player.elapsed) : null
 
@@ -207,7 +212,7 @@ function NowPlaying({ player, upNext }: { player: Player; upNext: WorkStep | nul
         {shown && (
           <img
             src={shown.set.exercise.gifUrl}
-            alt={shown.set.exercise.name}
+            alt={shownName ?? ''}
             width={288}
             height={288}
             className="size-72 rounded-2xl bg-white"
@@ -220,7 +225,7 @@ function NowPlaying({ player, upNext }: { player: Player; upNext: WorkStep | nul
                 {step.block}
                 {step.round !== undefined && ` · Round ${step.round} of ${step.rounds}`}
               </p>
-              <h1 className="text-4xl font-bold capitalize">{step.set.exercise.name}</h1>
+              <h1 className="text-4xl font-bold capitalize">{shownName}</h1>
               <p className="text-xl">{targetText(step.set, 'en')}</p>
               {side && (
                 <p
@@ -243,7 +248,7 @@ function NowPlaying({ player, upNext }: { player: Player; upNext: WorkStep | nul
               {shown && (
                 <>
                   <p className="text-muted-foreground text-sm tracking-widest uppercase">Up next</p>
-                  <p className="text-2xl font-semibold capitalize">{shown.set.exercise.name}</p>
+                  <p className="text-2xl font-semibold capitalize">{shownName}</p>
                   <p className="text-xl">{targetText(shown.set, 'en')}</p>
                 </>
               )}

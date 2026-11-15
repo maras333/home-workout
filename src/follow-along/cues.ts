@@ -1,3 +1,5 @@
+import type { Language } from '@/language'
+import { exerciseText } from '@/library'
 import type { WorkoutSet } from '@/workout'
 import { nextWork, switchSecond, type Step } from '@/workout/follow-along'
 import type { Position } from './player'
@@ -17,7 +19,11 @@ function spokenTarget({ target, perSide }: WorkoutSet): string {
 }
 
 /** The cue for the moment Follow-along arrives at `position`. */
-export function cueAt(steps: readonly Step[], { index, elapsed }: Position): Cue {
+export function cueAt(
+  steps: readonly Step[],
+  { index, elapsed }: Position,
+  language: Language,
+): Cue {
   const step = steps[index]
   if (!step) return { beep: 'finish', speech: 'Workout complete.' }
 
@@ -28,7 +34,7 @@ export function cueAt(steps: readonly Step[], { index, elapsed }: Position): Cue
       const { set } = next
       return {
         beep: null,
-        speech: `${step.label}. Next: ${set.exercise.name}, ${spokenTarget(set)}.`,
+        speech: `${step.label}. Next: ${exerciseText(set.exercise, language).name}, ${spokenTarget(set)}.`,
       }
     }
     return { beep: null, speech: null }

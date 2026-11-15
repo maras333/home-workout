@@ -48,6 +48,9 @@ export type ExerciseTags = {
   perSide: boolean
 }
 
+/** What an Exercise says in one Language: its name and steps. */
+export type ExerciseText = { name: string; steps: string[] }
+
 export type Exercise = ExerciseTags & {
   /** The dataset's `exerciseId`. */
   id: string

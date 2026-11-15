@@ -264,7 +264,17 @@ describe('the Workout preview in Polish', () => {
 
     await user.click(within(pushUpRow).getAllByRole('button')[0])
 
-    const dialog = screen.getByRole('dialog', { name: 'push-up' })
+    const dialog = screen.getByRole('dialog', { name: 'pompka' })
+    expect(
+      within(dialog)
+        .getAllByRole('listitem')
+        .map((step) => step.textContent),
+    ).toEqual([
+      'Zacznij w podporze przodem na prostych rękach, z dłońmi rozstawionymi nieco szerzej niż barki i złączonymi stopami.',
+      'Napnij brzuch i opuść ciało w stronę podłogi, zginając łokcie i utrzymując ciało w jednej linii.',
+      'Zatrzymaj się na chwilę, gdy klatka piersiowa jest tuż nad podłogą, a potem wypchnij się do pozycji wyjściowej, prostując ręce.',
+      'Powtórz tyle razy, ile zakłada seria.',
+    ])
     expect(dialog).toHaveTextContent('Ćwiczy: klatka piersiowa (także ręce, barki, brzuch)')
     expect(dialog).toHaveTextContent('Sprzęt: Bez sprzętu')
     expect(dialog).toHaveTextContent('Poziom: Średni')
@@ -283,5 +293,54 @@ describe('the Workout preview in Polish', () => {
     expect(screen.getByRole('heading', { level: 2, name: /^Część główna/ })).toHaveTextContent(
       `Część główna · 5 Ćwiczeń × ${text} (ostatnia Runda: 2 Ćwiczenia)`,
     )
+  })
+
+  it('names translated Exercises in Polish and untranslated ones in English', () => {
+    renderAt('/workout')
+
+    const main = screen.getByRole('region', { name: /^Część główna/ })
+    expect(
+      within(main)
+        .getAllByRole('img')
+        .map((gif) => gif.getAttribute('alt')),
+    ).toEqual([
+      'pompka',
+      'bodyweight standing calf raise',
+      'pompka',
+      'bodyweight standing calf raise',
+      'pompka',
+    ])
+    expect(within(main).getAllByRole('button', { name: 'Zamień ćwiczenie: pompka' })).toHaveLength(
+      3,
+    )
+  })
+
+  it('shows the saved text of an Exercise that left the library', async () => {
+    const user = userEvent.setup()
+    const saved = JSON.parse(localStorage.getItem('home-workout:current-workout')!) as Workout
+    saved.warmUp[0].exercise = {
+      ...saved.warmUp[0].exercise,
+      id: 'gone',
+      name: 'old move',
+      steps: ['Move the old way.'],
+    }
+    localStorage.setItem('home-workout:current-workout', JSON.stringify(saved))
+    renderAt('/workout')
+
+    const warmUp = screen.getByRole('region', { name: 'Rozgrzewka' })
+    await user.click(within(warmUp).getAllByRole('button')[0])
+
+    const dialog = screen.getByRole('dialog', { name: 'old move' })
+    expect(within(dialog).getByRole('listitem')).toHaveTextContent('Move the old way.')
+  })
+
+  it('keeps a saved Favourite matching after switching the Language', async () => {
+    const user = userEvent.setup()
+    renderAt('/workout')
+    await user.click(screen.getByRole('button', { name: /Save/ }))
+
+    await user.click(screen.getByRole('button', { name: 'EN' }))
+
+    expect(screen.getByRole('button', { name: /Save/ })).toHaveAttribute('aria-pressed', 'true')
   })
 })

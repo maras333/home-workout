@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { App } from '@/App'
-import type { Exercise } from '@/library'
+import { library, type Exercise } from '@/library'
 import type { Workout, WorkoutSet } from '@/workout'
 
 function exercise(id: string, name: string): Exercise {
@@ -575,6 +575,22 @@ describe('Follow-along voice', () => {
       'Workout complete.',
     ])
     expect(screen.getByRole('heading', { name: 'Workout complete' })).toBeInTheDocument()
+  })
+
+  it('names a translated Exercise in the current Language', () => {
+    const pushUp = library.find((candidate) => candidate.id === 'I4hDWkc')!
+    const withPushUp: Workout = {
+      ...workout,
+      main: { ...workout.main, sets: [{ ...squat, exercise: pushUp }, sidePlank] },
+    }
+    localStorage.setItem('home-workout:current-workout', JSON.stringify(withPushUp))
+    localStorage.setItem('home-workout:language', '"pl"')
+    renderAt('/follow-along')
+
+    wait(25)
+
+    expect(spoken[spoken.length - 1]).toContain('Next: pompka')
+    expect(within(nowPlaying()).getByRole('img', { name: 'pompka' })).toBeInTheDocument()
   })
 
   it('waits for Resume before announcing a Set reached while paused', async () => {

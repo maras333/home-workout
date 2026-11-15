@@ -218,7 +218,7 @@ const pl: Dictionary = {
     coolDown: 'Wyciszenie',
     lastRound: (exercises) => `ostatnia Runda: ${exercises}`,
     swap: 'Zamień',
-    swapExercise: (name) => `Zamień ${name}`,
+    swapExercise: (name) => `Zamień ćwiczenie: ${name}`,
   },
   exercise: {
     trains: (primary, secondary) => `Ćwiczy: ${primary}${secondary ? ` (także ${secondary})` : ''}`,
