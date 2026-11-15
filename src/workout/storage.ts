@@ -1,4 +1,5 @@
 import { DIFFICULTIES, EQUIPMENT, WORKOUT_TYPES } from '@/library'
+import { LANGUAGES, type Language } from '@/language/types'
 import { MINUTES } from './types'
 import type { Favourite, Workout, WorkoutRequest } from './types'
 
@@ -7,6 +8,7 @@ const WORKOUT_KEY = 'home-workout:current-workout'
 const SOUND_KEY = 'home-workout:sound-settings'
 const PROGRESS_KEY = 'home-workout:follow-along-progress'
 const FAVOURITES_KEY = 'home-workout:favourites'
+const LANGUAGE_KEY = 'home-workout:language'
 
 const DEFAULT_REQUEST: WorkoutRequest = {
   workoutType: 'full body',
@@ -128,6 +130,16 @@ export function loadSoundSettings(): SoundSettings {
 
 export function saveSoundSettings(settings: SoundSettings): void {
   write(SOUND_KEY, settings)
+}
+
+/** The saved Language, or null when none is saved or it is corrupt. */
+export function loadLanguage(): Language | null {
+  const value = read(LANGUAGE_KEY)
+  return includes(LANGUAGES, value) ? value : null
+}
+
+export function saveLanguage(language: Language): void {
+  write(LANGUAGE_KEY, language)
 }
 
 /** Follow-along progress older than this is ignored: the Workout was left long ago. */

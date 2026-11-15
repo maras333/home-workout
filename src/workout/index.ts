@@ -7,11 +7,13 @@ export { favouriteOf, isAvailable } from './favourites'
 export {
   clearProgress,
   loadFavourites,
+  loadLanguage,
   loadProgress,
   loadRequest,
   loadSoundSettings,
   loadWorkout,
   saveFavourites,
+  saveLanguage,
   saveProgress,
   saveRequest,
   saveSoundSettings,
@@ -19,7 +21,6 @@ export {
   type SoundSettings,
 } from './storage'
 export {
-  DIFFICULTY_HINTS,
   difficultyLabel,
   durationText,
   equipmentLabel,

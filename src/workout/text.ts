@@ -9,12 +9,6 @@ export const workoutTypeLabel = (type: WorkoutType) => capitalise(type)
 export const difficultyLabel = (difficulty: Difficulty) => capitalise(difficulty)
 export const equipmentLabel = (item: Equipment) => capitalise(item)
 
-export const DIFFICULTY_HINTS: Record<Difficulty, string> = {
-  beginner: 'New to training, or coming back after a break.',
-  intermediate: 'You train now and then and know the basic moves.',
-  advanced: 'You train regularly and want to be pushed.',
-}
-
 /** e.g. "Dumbbells, Kettlebell", or "Bodyweight" for none */
 export function equipmentText(equipment: readonly Equipment[]): string {
   return equipment.length > 0 ? equipment.map(equipmentLabel).join(', ') : 'Bodyweight'

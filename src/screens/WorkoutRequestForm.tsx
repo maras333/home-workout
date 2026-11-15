@@ -2,17 +2,14 @@ import { useId, useState, type FormEvent, type ReactNode } from 'react'
 import { useNavigate } from 'react-router'
 import { Button } from '@/components/ui/button'
 import { FavouritesSection } from '@/favourites/FavouritesSection'
+import { useText } from '@/language'
 import { DIFFICULTIES, EQUIPMENT, WORKOUT_TYPES, library } from '@/library'
 import {
-  DIFFICULTY_HINTS,
   MINUTES,
-  difficultyLabel,
-  equipmentLabel,
   generate,
   loadRequest,
   saveRequest,
   saveWorkout,
-  workoutTypeLabel,
   type WorkoutRequest,
 } from '@/workout'
 
@@ -67,6 +64,7 @@ function RadioCard({
 
 export function WorkoutRequestForm() {
   const navigate = useNavigate()
+  const text = useText().request
   const [request, setRequest] = useState<WorkoutRequest>(loadRequest)
 
   function update(changes: Partial<WorkoutRequest>) {
@@ -83,15 +81,15 @@ export function WorkoutRequestForm() {
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-12 p-8">
       <form onSubmit={onSubmit} className="flex flex-col gap-8">
-        <h1 className="text-3xl font-bold">Workout Request</h1>
+        <h1 className="text-3xl font-bold">{text.heading}</h1>
 
-        <Field legend="Workout type">
+        <Field legend={text.workoutType}>
           <div className="grid grid-cols-3 gap-3">
             {WORKOUT_TYPES.map((type) => (
               <RadioCard
                 key={type}
                 name="workout-type"
-                label={workoutTypeLabel(type)}
+                label={text.workoutTypes[type]}
                 checked={request.workoutType === type}
                 onChange={() => update({ workoutType: type })}
               />
@@ -99,13 +97,13 @@ export function WorkoutRequestForm() {
           </div>
         </Field>
 
-        <Field legend="Time">
+        <Field legend={text.time}>
           <div className="grid grid-cols-4 gap-3">
             {MINUTES.map((minutes) => (
               <RadioCard
                 key={minutes}
                 name="minutes"
-                label={`${minutes} min`}
+                label={text.minutes(minutes)}
                 checked={request.minutes === minutes}
                 onChange={() => update({ minutes })}
               />
@@ -113,14 +111,14 @@ export function WorkoutRequestForm() {
           </div>
         </Field>
 
-        <Field legend="Difficulty">
+        <Field legend={text.difficulty}>
           <div className="grid grid-cols-3 gap-3">
             {DIFFICULTIES.map((difficulty) => (
               <RadioCard
                 key={difficulty}
                 name="difficulty"
-                label={difficultyLabel(difficulty)}
-                hint={DIFFICULTY_HINTS[difficulty]}
+                label={text.difficulties[difficulty].label}
+                hint={text.difficulties[difficulty].hint}
                 checked={request.difficulty === difficulty}
                 onChange={() => update({ difficulty })}
               />
@@ -128,7 +126,7 @@ export function WorkoutRequestForm() {
           </div>
         </Field>
 
-        <Field legend="Equipment">
+        <Field legend={text.equipment}>
           <div className="flex flex-wrap gap-x-6 gap-y-2">
             {EQUIPMENT.map((item) => (
               <label key={item} className="flex cursor-pointer items-center gap-2">
@@ -144,15 +142,15 @@ export function WorkoutRequestForm() {
                     })
                   }
                 />
-                {equipmentLabel(item)}
+                {text.equipmentItems[item]}
               </label>
             ))}
           </div>
-          <p className="text-sm text-muted-foreground">Bodyweight Exercises are always included.</p>
+          <p className="text-sm text-muted-foreground">{text.bodyweightIncluded}</p>
         </Field>
 
         <Button type="submit" size="lg" className="self-start px-6">
-          Generate
+          {text.generate}
         </Button>
       </form>
       <FavouritesSection />
