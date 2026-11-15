@@ -34,7 +34,7 @@ Vite, React, TypeScript, React Router, Tailwind CSS v4 with shadcn/ui, and Vites
 
 ## Branches
 
-`main` holds the app and its planning documents. The exercise-dataset research and the throwaway Follow-along prototype lived on their own branches and were never merged. Both branches were deleted once the MVP shipped. Their conclusions are kept in decision tickets [01](.scratch/home-workout-mvp/issues/01-choose-exercise-dataset.md) and [06](.scratch/home-workout-mvp/issues/06-prototype-follow-along.md).
+`main` holds the app and its planning documents. The cited research behind the choice of exercise dataset is in [`docs/research/exercise-dataset.md`](docs/research/exercise-dataset.md). The throwaway Follow-along prototype lived on its own branch, was never merged and was deleted once the MVP shipped; the layout chosen is recorded in [decision ticket 06](.scratch/home-workout-mvp/issues/06-prototype-follow-along.md).
 
 ## Credits
 
