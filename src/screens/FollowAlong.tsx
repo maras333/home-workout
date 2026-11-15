@@ -2,14 +2,25 @@ import { useId, useMemo, useState } from 'react'
 import { preload } from 'react-dom'
 import { Link, Navigate } from 'react-router'
 import { cn } from 'cn'
+import { Button } from '@/components/ui/button'
+import { useControlKeys } from '@/follow-along/keys'
 import { usePlayer, type Player } from '@/follow-along/player'
+import { useCues, useSoundSettings } from '@/follow-along/sound'
 import { useWakeLock } from '@/follow-along/wake-lock'
-import { loadWorkout, plannedSeconds, targetText, type Workout, type WorkoutSet } from '@/workout'
+import {
+  loadWorkout,
+  plannedSeconds,
+  targetText,
+  type SoundSettings,
+  type Workout,
+  type WorkoutSet,
+} from '@/workout'
 import {
   BLOCK_NAMES,
   clockText,
   flatten,
   nextWork,
+  sideAt,
   type BlockName,
   type Step,
   type WorkStep,
@@ -26,6 +37,9 @@ function FollowAlongSession({ workout }: { workout: Workout }) {
   const total = plannedSeconds(workout)
   const player = usePlayer(steps)
   useWakeLock(!player.finished)
+  useControlKeys(player, !player.finished)
+  const [sound, setSound] = useSoundSettings()
+  useCues(steps, player, sound)
 
   const upNext = nextWork(steps, player.index)
   if (upNext) preload(upNext.set.exercise.gifUrl, { as: 'image' })
@@ -33,9 +47,12 @@ function FollowAlongSession({ workout }: { workout: Workout }) {
   if (player.finished) return <WorkoutComplete total={total} />
 
   return (
-    <div className="flex flex-col gap-8 p-6 lg:flex-row lg:items-start">
-      <Timeline steps={steps} player={player} total={total} />
-      <NowPlaying player={player} upNext={upNext} />
+    <div className="flex flex-col gap-4 p-6">
+      <SoundToggles settings={sound} onChange={setSound} />
+      <div className="flex flex-col gap-8 lg:flex-row lg:items-start">
+        <Timeline steps={steps} player={player} total={total} />
+        <NowPlaying player={player} upNext={upNext} />
+      </div>
     </div>
   )
 }
@@ -154,6 +171,7 @@ function NowPlaying({ player, upNext }: { player: Player; upNext: WorkStep | nul
   const isWork = step.kind === 'work'
   const shown = isWork ? step : upNext
   const progress = Math.round((player.elapsed / step.seconds) * 100)
+  const side = isWork ? sideAt(step, player.elapsed) : null
 
   return (
     <section aria-label="Now" className="flex flex-1 flex-col items-center gap-6">
@@ -176,6 +194,18 @@ function NowPlaying({ player, upNext }: { player: Player; upNext: WorkStep | nul
               </p>
               <h1 className="text-4xl font-bold capitalize">{step.set.exercise.name}</h1>
               <p className="text-xl">{targetText(step.set)}</p>
+              {side && (
+                <p
+                  className={cn(
+                    'w-fit rounded-full px-3 py-1 text-sm font-semibold',
+                    side.switching
+                      ? 'bg-amber-400 text-amber-950'
+                      : 'bg-muted text-muted-foreground',
+                  )}
+                >
+                  {side.text}
+                </p>
+              )}
             </>
           ) : (
             <>
@@ -213,7 +243,99 @@ function NowPlaying({ player, upNext }: { player: Player; upNext: WorkStep | nul
           style={{ width: `${progress}%` }}
         />
       </div>
+      <Controls player={player} />
     </section>
+  )
+}
+
+function Controls({ player }: { player: Player }) {
+  return (
+    <div className="flex items-center gap-3">
+      <ControlButton label="Back" shortcut="B" onClick={player.back} variant="outline" />
+      <ControlButton
+        label={player.paused ? 'Resume' : 'Pause'}
+        shortcut="Space"
+        onClick={player.togglePause}
+      />
+      <ControlButton label="Skip" shortcut="N" onClick={player.skip} variant="outline" />
+    </div>
+  )
+}
+
+function ControlButton({
+  label,
+  shortcut,
+  onClick,
+  variant = 'default',
+}: {
+  label: string
+  shortcut: string
+  onClick: () => void
+  variant?: 'default' | 'outline'
+}) {
+  return (
+    <Button
+      variant={variant}
+      onClick={onClick}
+      aria-keyshortcuts={shortcut === 'Space' ? 'Space' : shortcut.toLowerCase()}
+      className="h-12 min-w-28 px-5 text-base"
+    >
+      {label}
+      <kbd aria-hidden="true" className="text-xs opacity-60">
+        {shortcut}
+      </kbd>
+    </Button>
+  )
+}
+
+function SoundToggles({
+  settings,
+  onChange,
+}: {
+  settings: SoundSettings
+  onChange: (settings: SoundSettings) => void
+}) {
+  return (
+    <div className="flex justify-end gap-2">
+      <SoundToggle
+        label="Beeps"
+        icon="🔔"
+        on={settings.beeps}
+        onToggle={() => onChange({ ...settings, beeps: !settings.beeps })}
+      />
+      <SoundToggle
+        label="Voice"
+        icon="🗣"
+        on={settings.voice}
+        onToggle={() => onChange({ ...settings, voice: !settings.voice })}
+      />
+    </div>
+  )
+}
+
+function SoundToggle({
+  label,
+  icon,
+  on,
+  onToggle,
+}: {
+  label: string
+  icon: string
+  on: boolean
+  onToggle: () => void
+}) {
+  return (
+    <Button
+      variant={on ? 'secondary' : 'ghost'}
+      size="icon-lg"
+      aria-label={label}
+      aria-pressed={on}
+      title={`${label} ${on ? 'on' : 'off'}`}
+      onClick={onToggle}
+      className={cn('text-lg', !on && 'opacity-40 grayscale')}
+    >
+      <span aria-hidden="true">{icon}</span>
+    </Button>
   )
 }
 

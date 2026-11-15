@@ -3,7 +3,15 @@ export { generate } from './generate'
 export { canSwap, swap, type SetPosition } from './swap'
 export { seededRandom } from './random'
 export { allSets, exerciseCount, plannedSeconds, setSeconds } from './workout'
-export { loadRequest, loadWorkout, saveRequest, saveWorkout } from './storage'
+export {
+  loadRequest,
+  loadSoundSettings,
+  loadWorkout,
+  saveRequest,
+  saveSoundSettings,
+  saveWorkout,
+  type SoundSettings,
+} from './storage'
 export {
   DIFFICULTY_HINTS,
   difficultyLabel,

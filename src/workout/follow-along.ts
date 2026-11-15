@@ -77,6 +77,26 @@ export function nextWork(steps: readonly Step[], index: number): WorkStep | null
   return null
 }
 
+/** Seconds into a per-side Set at which the second side starts. */
+export function switchSecond(step: WorkStep): number | null {
+  return step.set.perSide ? step.seconds / 2 : null
+}
+
+/** How long "— switch!" stays up after the side switch. */
+const SWITCH_SHOWN_SECONDS = 3
+
+export type Side = { text: string; switching: boolean }
+
+/** e.g. "Side 1 of 2", "Side 2 of 2 — switch!" just after the switch; null when not per side. */
+export function sideAt(step: WorkStep, elapsed: number): Side | null {
+  const half = switchSecond(step)
+  if (half === null) return null
+  if (elapsed < half) return { text: 'Side 1 of 2', switching: false }
+  return elapsed < half + SWITCH_SHOWN_SECONDS
+    ? { text: 'Side 2 of 2 — switch!', switching: true }
+    : { text: 'Side 2 of 2', switching: false }
+}
+
 /** e.g. "1:05" */
 export function clockText(seconds: number): string {
   const whole = Math.max(0, Math.ceil(seconds))

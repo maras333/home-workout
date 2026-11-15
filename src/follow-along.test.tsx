@@ -72,12 +72,16 @@ function renderAt(path: string) {
   )
 }
 
-/** Moves the clock on by whole seconds. */
+/** Moves the clock on by whole seconds, rendering after each one as the browser would. */
 function wait(seconds: number) {
-  act(() => {
-    vi.advanceTimersByTime(seconds * 1000)
-  })
+  for (let second = 0; second < seconds; second++) {
+    act(() => {
+      vi.advanceTimersByTime(1000)
+    })
+  }
 }
+
+const setupUser = () => userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
 
 /** Lets the Wake Lock promises settle. */
 async function settle() {
@@ -105,6 +109,72 @@ function expectSet(name: string, target: string, seconds: string) {
   expect(currentRow()).toHaveTextContent(`${name}${target}`)
 }
 
+/** Tones the app played through the fake AudioContext, by frequency in Hz. */
+let tones: number[] = []
+
+/** The tones played since the last call. */
+function takeTones(): number[] {
+  const played = tones
+  tones = []
+  return played
+}
+
+const COUNTDOWN = 880
+const START = 1320
+const SWITCH = 1000
+const FINISH = [523, 659, 784]
+
+/** The state a new fake AudioContext starts in; browsers start it suspended without a tap. */
+let audioStartsAs: 'running' | 'suspended' = 'running'
+let audioContexts: FakeAudioContext[] = []
+
+class FakeAudioContext {
+  currentTime = 0
+  state = audioStartsAs
+  destination = {}
+  constructor() {
+    audioContexts.push(this)
+  }
+  resume = vi.fn(async () => {
+    await Promise.resolve() // browsers change the state later, never during the call
+    this.state = 'running'
+  })
+  close = async () => {}
+  createOscillator() {
+    const oscillator = {
+      type: 'sine',
+      frequency: { value: 0 },
+      connect: <T,>(node: T) => node,
+      start: () => tones.push(oscillator.frequency.value),
+      stop: () => {},
+    }
+    return oscillator
+  }
+  createGain() {
+    const ramp = () => {}
+    return {
+      gain: { value: 1, setValueAtTime: ramp, exponentialRampToValueAtTime: ramp },
+      connect: <T,>(node: T) => node,
+    }
+  }
+}
+
+/** Everything the app said through the fake speechSynthesis, in order. */
+let spoken: string[] = []
+let speech: {
+  speaking: boolean
+  pending: boolean
+  speak: ReturnType<typeof vi.fn>
+  cancel: ReturnType<typeof vi.fn>
+}
+
+class FakeUtterance {
+  readonly text: string
+  constructor(text: string) {
+    this.text = text
+  }
+}
+
 let wakeLock: { request: ReturnType<typeof vi.fn>; release: ReturnType<typeof vi.fn> }
 
 beforeEach(() => {
@@ -118,6 +188,24 @@ beforeEach(() => {
   const request = vi.fn(async () => ({ released: false, release }))
   wakeLock = { request, release }
   Object.defineProperty(navigator, 'wakeLock', { value: { request }, configurable: true })
+  tones = []
+  audioStartsAs = 'running'
+  audioContexts = []
+  vi.stubGlobal('AudioContext', FakeAudioContext)
+  spoken = []
+  speech = {
+    speaking: false,
+    pending: false,
+    speak: vi.fn((utterance: FakeUtterance) => {
+      spoken.push(utterance.text)
+      speech.speaking = true // the fake never finishes speaking
+    }),
+    cancel: vi.fn(() => {
+      speech.speaking = false
+    }),
+  }
+  vi.stubGlobal('speechSynthesis', speech)
+  vi.stubGlobal('SpeechSynthesisUtterance', FakeUtterance)
 })
 
 afterEach(() => {
@@ -128,7 +216,7 @@ afterEach(() => {
 
 describe('Follow-along', () => {
   it('starts from the preview with a 5 s "Get ready" showing the first Exercise up next', async () => {
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    const user = setupUser()
     renderAt('/workout')
 
     await user.click(screen.getByRole('button', { name: 'Start Workout' }))
@@ -280,5 +368,295 @@ describe('Follow-along', () => {
     renderAt('/follow-along')
 
     expect(screen.getByRole('heading', { level: 1, name: 'Workout Request' })).toBeInTheDocument()
+  })
+})
+
+describe('Follow-along controls', () => {
+  it('pauses and resumes with the button and with Space', async () => {
+    const user = setupUser()
+    renderAt('/follow-along')
+    wait(7)
+    expectSet('arm circle', '20 s', '0:18')
+
+    await user.click(screen.getByRole('button', { name: 'Pause' }))
+    wait(10)
+    expect(timeLeft()).toHaveTextContent('0:18')
+
+    await user.click(screen.getByRole('button', { name: 'Resume' }))
+    wait(3)
+    expect(timeLeft()).toHaveTextContent('0:15')
+
+    await user.keyboard(' ')
+    wait(10)
+    expect(timeLeft()).toHaveTextContent('0:15')
+    expect(screen.getByRole('button', { name: 'Resume' })).toBeInTheDocument()
+
+    await user.keyboard(' ')
+    wait(5)
+    expect(timeLeft()).toHaveTextContent('0:10')
+  })
+  it('skips to the next Set or rest with the button and with N', async () => {
+    const user = setupUser()
+    renderAt('/follow-along')
+
+    await user.click(screen.getByRole('button', { name: 'Skip' }))
+    expectSet('arm circle', '20 s', '0:20')
+    wait(4)
+
+    await user.keyboard('n')
+    expectRest('Change-over', 'squat', '5 reps', '0:10')
+    expect(screen.getByText('0:20 / 2:35')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Skip' }))
+    expectSet('squat', '5 reps', '0:15')
+    wait(1)
+    expect(timeLeft()).toHaveTextContent('0:14')
+  })
+
+  it('restarts the Set when more than 3 s in, otherwise goes back to the previous Exercise', async () => {
+    const user = setupUser()
+    renderAt('/follow-along')
+    wait(5 + 20 + 10 + 4) // 4 s into the first squat
+    expectSet('squat', '5 reps', '0:11')
+
+    await user.click(screen.getByRole('button', { name: 'Back' }))
+    expectSet('squat', '5 reps', '0:15')
+
+    wait(3)
+    await user.keyboard('b')
+    expectSet('arm circle', '20 s', '0:20')
+
+    // Back from a rest: the Exercise before it.
+    wait(20 + 2)
+    expectRest('Change-over', 'squat', '5 reps', '0:08')
+    await user.keyboard('b')
+    expectSet('arm circle', '20 s', '0:20')
+
+    // Nothing before the first Exercise: it restarts.
+    await user.keyboard('b')
+    expectSet('arm circle', '20 s', '0:20')
+  })
+  it('pauses with Space even after clicking another control', async () => {
+    const user = setupUser()
+    renderAt('/follow-along')
+
+    await user.click(screen.getByRole('button', { name: 'Skip' }))
+    await user.keyboard(' ')
+    wait(5)
+
+    expectSet('arm circle', '20 s', '0:20')
+    expect(screen.getByRole('button', { name: 'Resume' })).toBeInTheDocument()
+  })
+
+  it('tells you when to switch sides on a per-side Set', () => {
+    renderAt('/follow-along')
+    wait(65)
+    expectSet('side plank', '10 s per side', '0:20')
+    expect(nowPlaying()).toHaveTextContent('Side 1 of 2')
+
+    wait(9)
+    expect(nowPlaying()).toHaveTextContent('Side 1 of 2')
+    wait(1)
+    expect(nowPlaying()).toHaveTextContent('Side 2 of 2 — switch!')
+    expect(timeLeft()).toHaveTextContent('0:10')
+
+    wait(3)
+    expect(nowPlaying()).toHaveTextContent('Side 2 of 2')
+    expect(nowPlaying()).not.toHaveTextContent('switch!')
+  })
+
+  it('shows no side on Sets that are not per side', () => {
+    renderAt('/follow-along')
+    wait(5)
+    expect(nowPlaying()).not.toHaveTextContent('Side')
+  })
+})
+
+describe('Follow-along sound', () => {
+  it('beeps 3-2-1 before each Set or rest ends and a start tone when a Set begins', () => {
+    renderAt('/follow-along')
+    wait(1)
+    expect(takeTones()).toEqual([])
+
+    wait(1) // 3 s left of "Get ready"
+    expect(takeTones()).toEqual([COUNTDOWN])
+    wait(2)
+    expect(takeTones()).toEqual([COUNTDOWN, COUNTDOWN])
+
+    wait(1)
+    expect(takeTones()).toEqual([START])
+
+    // arm circle ends into the change-over: 3-2-1, and no start tone for a rest.
+    wait(19)
+    expect(takeTones()).toEqual([COUNTDOWN, COUNTDOWN, COUNTDOWN])
+    wait(1)
+    expect(takeTones()).toEqual([])
+  })
+
+  it('double-beeps at the side switch', () => {
+    renderAt('/follow-along')
+    wait(65 + 9)
+    takeTones()
+
+    wait(1)
+
+    expect(takeTones()).toEqual([SWITCH, SWITCH])
+  })
+
+  it('plays a finish tone at the end of the Workout', () => {
+    renderAt('/follow-along')
+    wait(159)
+    takeTones()
+
+    wait(1)
+
+    expect(screen.getByRole('heading', { name: 'Workout complete' })).toBeInTheDocument()
+    expect(takeTones()).toEqual(FINISH)
+  })
+
+  it('plays the start tone again when Back restarts a Set', async () => {
+    const user = setupUser()
+    renderAt('/follow-along')
+    wait(5 + 10)
+    takeTones()
+
+    await user.keyboard('b')
+
+    expect(takeTones()).toEqual([START])
+  })
+
+  it('drops beeps while the browser holds audio back, and asks again on your first tap', async () => {
+    audioStartsAs = 'suspended'
+    const user = setupUser()
+    renderAt('/follow-along')
+    wait(2) // 3 s left
+    expect(takeTones()).toEqual([])
+    await settle()
+    const [audio] = audioContexts
+    audio.state = 'suspended' // the browser refused to resume it without a tap
+    audio.resume.mockClear()
+
+    await user.click(screen.getByRole('button', { name: 'Pause' }))
+
+    expect(audio.resume).toHaveBeenCalled()
+    await user.click(screen.getByRole('button', { name: 'Resume' }))
+    wait(1)
+    expect(takeTones()).toEqual([COUNTDOWN])
+  })
+
+  it('stays silent in browsers without Web Audio', () => {
+    vi.stubGlobal('AudioContext', undefined)
+    renderAt('/follow-along')
+
+    wait(6)
+
+    expectSet('arm circle', '20 s', '0:19')
+  })
+})
+
+describe('Follow-along voice', () => {
+  it('announces each rest with what comes next, each Set start, the side switch and the end', () => {
+    renderAt('/follow-along')
+
+    wait(160)
+
+    expect(spoken).toEqual([
+      'Go.', // arm circle
+      'Change-over. Next: squat, 5 reps.',
+      'Go.',
+      'Rest. Next: side plank, 10 seconds per side.',
+      'Go.',
+      'Switch sides.',
+      'Rest between Rounds. Next: squat, 5 reps.',
+      'Go.',
+      'Change-over. Next: child pose, 20 seconds.',
+      'Go.',
+      'Workout complete.',
+    ])
+    expect(screen.getByRole('heading', { name: 'Workout complete' })).toBeInTheDocument()
+  })
+
+  it('waits for Resume before announcing a Set reached while paused', async () => {
+    const user = setupUser()
+    renderAt('/follow-along')
+    wait(5)
+    await user.keyboard(' ')
+    spoken = []
+
+    await user.keyboard('n')
+    await user.keyboard('n')
+    expect(spoken).toEqual([])
+    expectSet('squat', '5 reps', '0:15')
+
+    await user.keyboard(' ')
+    expect(spoken).toEqual(['Go.'])
+  })
+
+  it('works in browsers without speech', () => {
+    vi.stubGlobal('speechSynthesis', undefined)
+    vi.stubGlobal('SpeechSynthesisUtterance', undefined)
+    renderAt('/follow-along')
+
+    wait(6)
+
+    expectSet('arm circle', '20 s', '0:19')
+  })
+})
+
+describe('Follow-along sound toggles', () => {
+  const beepsToggle = () => screen.getByRole('button', { name: 'Beeps' })
+  const voiceToggle = () => screen.getByRole('button', { name: 'Voice' })
+
+  it('has beeps and voice on by default', () => {
+    renderAt('/follow-along')
+
+    expect(beepsToggle()).toHaveAttribute('aria-pressed', 'true')
+    expect(beepsToggle()).toHaveTextContent('🔔')
+    expect(voiceToggle()).toHaveAttribute('aria-pressed', 'true')
+    expect(voiceToggle()).toHaveTextContent('🗣')
+  })
+
+  it('silences the beeps and the voice separately, and remembers it', async () => {
+    const user = setupUser()
+    const { unmount } = renderAt('/follow-along')
+
+    await user.click(beepsToggle())
+    wait(5)
+    expect(beepsToggle()).toHaveAttribute('aria-pressed', 'false')
+    expect(takeTones()).toEqual([])
+    expect(spoken).toEqual(['Go.'])
+
+    await user.click(voiceToggle())
+    await user.click(beepsToggle())
+    wait(20)
+    expect(takeTones()).toEqual([COUNTDOWN, COUNTDOWN, COUNTDOWN])
+    expect(spoken).toEqual(['Go.'])
+
+    unmount()
+    renderAt('/follow-along')
+    expect(beepsToggle()).toHaveAttribute('aria-pressed', 'true')
+    expect(voiceToggle()).toHaveAttribute('aria-pressed', 'false')
+    wait(5)
+    expect(takeTones()).toEqual([COUNTDOWN, COUNTDOWN, COUNTDOWN, START])
+    expect(spoken).toEqual(['Go.'])
+  })
+
+  it('stops speaking at once when the voice is switched off', async () => {
+    const user = setupUser()
+    renderAt('/follow-along')
+    wait(5)
+    speech.cancel.mockClear()
+
+    await user.click(voiceToggle())
+
+    expect(speech.cancel).toHaveBeenCalled()
+  })
+
+  it('falls back to both on when the saved settings are corrupt', () => {
+    localStorage.setItem('home-workout:sound-settings', '{"beeps": "loud"')
+    renderAt('/follow-along')
+
+    expect(beepsToggle()).toHaveAttribute('aria-pressed', 'true')
+    expect(voiceToggle()).toHaveAttribute('aria-pressed', 'true')
   })
 })

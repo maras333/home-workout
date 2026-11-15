@@ -4,6 +4,7 @@ import type { Workout, WorkoutRequest } from './types'
 
 const REQUEST_KEY = 'home-workout:last-request'
 const WORKOUT_KEY = 'home-workout:current-workout'
+const SOUND_KEY = 'home-workout:sound-settings'
 
 const DEFAULT_REQUEST: WorkoutRequest = {
   workoutType: 'full body',
@@ -98,4 +99,21 @@ export function loadWorkout(): Workout | null {
 
 export function saveWorkout(workout: Workout): void {
   write(WORKOUT_KEY, workout)
+}
+
+/** Follow-along's beeps and voice, each on or off. */
+export type SoundSettings = { beeps: boolean; voice: boolean }
+
+const DEFAULT_SOUND: SoundSettings = { beeps: true, voice: true }
+
+/** The saved sound settings, or both on when none are saved or they are corrupt. */
+export function loadSoundSettings(): SoundSettings {
+  const value = read(SOUND_KEY)
+  return isRecord(value) && typeof value.beeps === 'boolean' && typeof value.voice === 'boolean'
+    ? { beeps: value.beeps, voice: value.voice }
+    : DEFAULT_SOUND
+}
+
+export function saveSoundSettings(settings: SoundSettings): void {
+  write(SOUND_KEY, settings)
 }
