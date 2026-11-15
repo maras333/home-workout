@@ -6,6 +6,7 @@ import { ExerciseDetailDialog } from '@/components/ExerciseDetailDialog'
 import { library, type Exercise } from '@/library'
 import {
   canSwap,
+  clearProgress,
   durationText,
   exerciseCount,
   generate,
@@ -122,7 +123,14 @@ export function WorkoutPreview() {
         <Button variant="secondary" size="lg" onClick={() => generateAnother(workout)}>
           Generate another
         </Button>
-        <Button size="lg" className="px-6" onClick={() => navigate('/follow-along')}>
+        <Button
+          size="lg"
+          className="px-6"
+          onClick={() => {
+            clearProgress()
+            navigate('/follow-along')
+          }}
+        >
           Start Workout
         </Button>
       </nav>

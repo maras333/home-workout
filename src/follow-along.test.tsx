@@ -81,6 +81,8 @@ function wait(seconds: number) {
   }
 }
 
+const PROGRESS_KEY = 'home-workout:follow-along-progress'
+
 const setupUser = () => userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
 
 /** Lets the Wake Lock promises settle. */
@@ -633,10 +635,12 @@ describe('Follow-along sound toggles', () => {
     expect(spoken).toEqual(['Go.'])
 
     unmount()
-    renderAt('/follow-along')
+    takeTones()
+    renderAt('/follow-along') // back paused at the start of the change-over
     expect(beepsToggle()).toHaveAttribute('aria-pressed', 'true')
     expect(voiceToggle()).toHaveAttribute('aria-pressed', 'false')
-    wait(5)
+    await user.click(screen.getByRole('button', { name: 'Resume' }))
+    wait(10)
     expect(takeTones()).toEqual([COUNTDOWN, COUNTDOWN, COUNTDOWN, START])
     expect(spoken).toEqual(['Go.'])
   })
@@ -658,5 +662,189 @@ describe('Follow-along sound toggles', () => {
 
     expect(beepsToggle()).toHaveAttribute('aria-pressed', 'true')
     expect(voiceToggle()).toHaveAttribute('aria-pressed', 'true')
+  })
+})
+
+describe('Follow-along progress', () => {
+  it('comes back paused at the start of the Set it was on', async () => {
+    const user = setupUser()
+    const { unmount } = renderAt('/follow-along')
+    wait(5 + 20 + 10 + 4) // 4 s into the first squat
+    unmount()
+    spoken = []
+    takeTones()
+
+    renderAt('/follow-along')
+
+    expectSet('squat', '5 reps', '0:15')
+    expect(screen.getByText('Done:').closest('li')).toHaveTextContent('arm circle')
+    wait(10)
+    expect(timeLeft()).toHaveTextContent('0:15')
+    expect(spoken).toEqual([])
+
+    await user.click(screen.getByRole('button', { name: 'Resume' }))
+    expect(spoken).toEqual(['Go.'])
+    expect(takeTones()).toEqual([START])
+    wait(1)
+    expect(timeLeft()).toHaveTextContent('0:14')
+  })
+
+  it('comes back at the start of the rest it was on', () => {
+    const { unmount } = renderAt('/follow-along')
+    wait(5 + 20 + 7)
+    unmount()
+
+    renderAt('/follow-along')
+
+    expectRest('Change-over', 'squat', '5 reps', '0:10')
+    expect(screen.getByRole('button', { name: 'Resume' })).toBeInTheDocument()
+  })
+
+  it('ignores progress older than 12 hours and starts afresh', () => {
+    const { unmount } = renderAt('/follow-along')
+    wait(5 + 20 + 10)
+    unmount()
+    expect(localStorage.getItem(PROGRESS_KEY)).not.toBeNull()
+    vi.setSystemTime(Date.now() + 12 * 60 * 60 * 1000 + 1000)
+
+    renderAt('/follow-along')
+
+    expectRest('Get ready', 'arm circle', '20 s', '0:05')
+    expect(screen.getByRole('button', { name: 'Pause' })).toBeInTheDocument()
+    expect(JSON.parse(localStorage.getItem(PROGRESS_KEY)!)).toMatchObject({ index: 0 })
+  })
+
+  it('still resumes progress just under 12 hours old', () => {
+    const { unmount } = renderAt('/follow-along')
+    wait(5 + 20 + 10)
+    unmount()
+    vi.setSystemTime(Date.now() + 12 * 60 * 60 * 1000 - 1000)
+
+    renderAt('/follow-along')
+
+    expectSet('squat', '5 reps', '0:15')
+  })
+
+  it('starts from the top when the saved progress is corrupt', () => {
+    localStorage.setItem(PROGRESS_KEY, '{"index": "three"')
+
+    renderAt('/follow-along')
+
+    expectRest('Get ready', 'arm circle', '20 s', '0:05')
+  })
+
+  it('comes back paused at "Get ready" when reloaded during it', () => {
+    const { unmount } = renderAt('/follow-along')
+    wait(2)
+    unmount()
+
+    renderAt('/follow-along')
+
+    expectRest('Get ready', 'arm circle', '20 s', '0:05')
+    expect(screen.getByRole('button', { name: 'Resume' })).toBeInTheDocument()
+  })
+
+  it('forgets the progress when a new Workout is generated', async () => {
+    const user = setupUser()
+    const { unmount } = renderAt('/follow-along')
+    wait(5 + 20 + 10)
+    unmount()
+
+    renderAt('/')
+    await user.click(screen.getByRole('button', { name: 'Generate' }))
+
+    expect(localStorage.getItem(PROGRESS_KEY)).toBeNull()
+  })
+
+  it('starts from the top when the saved Step is beyond this Workout', () => {
+    localStorage.setItem(PROGRESS_KEY, JSON.stringify({ index: 99, savedAt: Date.now() }))
+
+    renderAt('/follow-along')
+
+    expectRest('Get ready', 'arm circle', '20 s', '0:05')
+    expect(screen.getByRole('button', { name: 'Pause' })).toBeInTheDocument()
+  })
+
+  it('clears the progress once the Workout is complete', () => {
+    renderAt('/follow-along')
+    wait(100)
+    expect(localStorage.getItem(PROGRESS_KEY)).not.toBeNull()
+
+    wait(60)
+
+    expect(screen.getByRole('heading', { name: 'Workout complete' })).toBeInTheDocument()
+    expect(localStorage.getItem(PROGRESS_KEY)).toBeNull()
+  })
+
+  it('starts afresh when you press Start Workout on the preview', async () => {
+    const user = setupUser()
+    const { unmount } = renderAt('/follow-along')
+    wait(5 + 20 + 10)
+    unmount()
+
+    renderAt('/workout')
+    await user.click(screen.getByRole('button', { name: 'Start Workout' }))
+
+    expectRest('Get ready', 'arm circle', '20 s', '0:05')
+    expect(screen.getByRole('button', { name: 'Pause' })).toBeInTheDocument()
+  })
+})
+
+describe('End Workout', () => {
+  const timeline = () => screen.getByRole('complementary')
+
+  it('asks first, then clears the progress and goes to the Workout Request form', async () => {
+    const user = setupUser()
+    renderAt('/follow-along')
+    wait(5 + 20 + 10)
+    expect(localStorage.getItem(PROGRESS_KEY)).not.toBeNull()
+
+    await user.click(within(timeline()).getByRole('button', { name: 'End Workout' }))
+    const dialog = screen.getByRole('dialog', { name: 'End this Workout?' })
+    await user.click(within(dialog).getByRole('button', { name: 'End Workout' }))
+
+    expect(screen.getByRole('heading', { level: 1, name: 'Workout Request' })).toBeInTheDocument()
+    expect(localStorage.getItem(PROGRESS_KEY)).toBeNull()
+    expect(localStorage.getItem('home-workout:current-workout')).not.toBeNull()
+  })
+
+  it('keeps going when you cancel', async () => {
+    const user = setupUser()
+    renderAt('/follow-along')
+    wait(5 + 20 + 10)
+
+    await user.click(within(timeline()).getByRole('button', { name: 'End Workout' }))
+    wait(30) // the Workout waits while it asks
+    await user.click(screen.getByRole('button', { name: 'Keep going' }))
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Pause' })).toBeInTheDocument()
+    wait(1)
+    expect(timeLeft()).toHaveTextContent('0:14')
+    expect(localStorage.getItem(PROGRESS_KEY)).not.toBeNull()
+  })
+
+  it('stays paused after cancelling if it was paused before', async () => {
+    const user = setupUser()
+    renderAt('/follow-along')
+    wait(5)
+    await user.click(screen.getByRole('button', { name: 'Pause' }))
+
+    await user.click(within(timeline()).getByRole('button', { name: 'End Workout' }))
+    await user.click(screen.getByRole('button', { name: 'Keep going' }))
+
+    expect(screen.getByRole('button', { name: 'Resume' })).toBeInTheDocument()
+  })
+
+  it('leaves the control keys alone while it asks', async () => {
+    const user = setupUser()
+    renderAt('/follow-along')
+    wait(5)
+
+    await user.click(within(timeline()).getByRole('button', { name: 'End Workout' }))
+    await user.keyboard('n')
+    await user.keyboard('{Escape}')
+
+    expectSet('arm circle', '20 s', '0:20')
   })
 })

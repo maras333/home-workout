@@ -99,14 +99,15 @@ function say(text: string): void {
 
 /**
  * Beeps and speaks as Follow-along reaches each new position. Nothing plays for the
- * position it opens on, so a remount does not repeat the last cue; a position reached
- * while paused plays its cue on Resume.
+ * running position it opens on; a position reached or opened while paused plays its cue
+ * on Resume.
  */
 export function useCues(steps: readonly Step[], state: PlayerState, settings: SoundSettings): void {
   const { index, elapsed, paused } = state
   const { beeps, voice } = settings
   const audio = useAudio()
-  const played = useRef(`${index}:${elapsed}`)
+  // Opening paused (resumed progress), the cue waits for Resume; otherwise it already passed.
+  const played = useRef<string | null>(paused ? null : `${index}:${elapsed}`)
 
   useEffect(() => {
     const at = `${index}:${elapsed}`

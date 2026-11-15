@@ -1,13 +1,24 @@
 import { useId, useMemo, useState } from 'react'
 import { preload } from 'react-dom'
-import { Link, Navigate } from 'react-router'
+import { Link, Navigate, useNavigate } from 'react-router'
 import { cn } from 'cn'
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { useControlKeys } from '@/follow-along/keys'
 import { usePlayer, type Player } from '@/follow-along/player'
+import { startingState, useSaveProgress } from '@/follow-along/progress'
 import { useCues, useSoundSettings } from '@/follow-along/sound'
 import { useWakeLock } from '@/follow-along/wake-lock'
 import {
+  clearProgress,
   loadWorkout,
   plannedSeconds,
   targetText,
@@ -35,9 +46,22 @@ export function FollowAlong() {
 function FollowAlongSession({ workout }: { workout: Workout }) {
   const steps = useMemo(() => flatten(workout), [workout])
   const total = plannedSeconds(workout)
-  const player = usePlayer(steps)
+  const [start] = useState(() => startingState(steps))
+  const player = usePlayer(steps, start)
+  useSaveProgress(player.index, player.finished)
   useWakeLock(!player.finished)
-  useControlKeys(player, !player.finished)
+  // While End Workout asks, the Workout waits; cancelling carries on as it was.
+  const [ending, setEnding] = useState<{ resumeAfter: boolean } | null>(null)
+  useControlKeys(player, !player.finished && ending === null)
+  const askToEnd = (open: boolean) => {
+    if (open && !ending) {
+      if (!player.paused) player.togglePause()
+      setEnding({ resumeAfter: !player.paused })
+    } else if (!open && ending) {
+      if (ending.resumeAfter) player.togglePause()
+      setEnding(null)
+    }
+  }
   const [sound, setSound] = useSoundSettings()
   useCues(steps, player, sound)
 
@@ -50,7 +74,10 @@ function FollowAlongSession({ workout }: { workout: Workout }) {
     <div className="flex flex-col gap-4 p-6">
       <SoundToggles settings={sound} onChange={setSound} />
       <div className="flex flex-col gap-8 lg:flex-row lg:items-start">
-        <Timeline steps={steps} player={player} total={total} />
+        <aside className="flex w-full shrink-0 flex-col gap-6 lg:w-80">
+          <Timeline steps={steps} player={player} total={total} />
+          <EndWorkout open={ending !== null} onOpenChange={askToEnd} />
+        </aside>
         <NowPlaying player={player} upNext={upNext} />
       </div>
     </div>
@@ -89,7 +116,7 @@ function Timeline({
   total: number
 }) {
   return (
-    <aside className="flex w-full shrink-0 flex-col gap-4 lg:w-80">
+    <div className="flex flex-col gap-4">
       <p className="text-muted-foreground text-sm tabular-nums">
         <span className="sr-only">Time done: </span>
         {clockText(timeDone(steps, player))} / {clockText(total)}
@@ -99,7 +126,7 @@ function Timeline({
         if (groups.length === 0) return null
         return <TimelineBlock key={block} block={block} groups={groups} current={player.index} />
       })}
-    </aside>
+    </div>
   )
 }
 
@@ -285,6 +312,46 @@ function ControlButton({
         {shortcut}
       </kbd>
     </Button>
+  )
+}
+
+/** Ends the Workout early, after asking: the saved progress goes, the Workout stays. */
+function EndWorkout({
+  open,
+  onOpenChange,
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}) {
+  const navigate = useNavigate()
+  const end = () => {
+    clearProgress()
+    navigate('/')
+  }
+  return (
+    <>
+      <Button variant="destructive" className="self-start" onClick={() => onOpenChange(true)}>
+        End Workout
+      </Button>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent showCloseButton={false}>
+          <DialogHeader>
+            <DialogTitle>End this Workout?</DialogTitle>
+            <DialogDescription>
+              Your place in it is forgotten. You can start it again from the preview.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Keep going</Button>
+            </DialogClose>
+            <Button variant="destructive" onClick={end}>
+              End Workout
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }
 

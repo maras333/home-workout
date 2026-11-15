@@ -3,8 +3,7 @@ import type { Step } from '@/workout/follow-along'
 
 /**
  * Where Follow-along stands: the Step being played and the whole seconds spent on it.
- * `index === steps.length` means the Workout is complete. Saved progress (ticket 09)
- * works on this same position.
+ * `index === steps.length` means the Workout is complete.
  */
 export type Position = { index: number; elapsed: number }
 
@@ -63,11 +62,11 @@ export type Player = PlayerState &
 
 const TICK_MS = 1000
 
-/** Plays the Steps from the start, one second at a time, moving on when each runs out. */
-export function usePlayer(steps: readonly Step[]): Player {
+/** Plays the Steps from `start`, one second at a time, moving on when each runs out. */
+export function usePlayer(steps: readonly Step[], start: PlayerState): Player {
   const [state, dispatch] = useReducer(
     (current: PlayerState, action: PlayerAction) => advance(steps, current, action),
-    { index: 0, elapsed: 0, paused: false },
+    start,
   )
   const controls = useMemo<PlayerControls>(
     () => ({

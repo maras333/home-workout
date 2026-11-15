@@ -4,9 +4,12 @@ export { canSwap, swap, type SetPosition } from './swap'
 export { seededRandom } from './random'
 export { allSets, exerciseCount, plannedSeconds, setSeconds } from './workout'
 export {
+  clearProgress,
+  loadProgress,
   loadRequest,
   loadSoundSettings,
   loadWorkout,
+  saveProgress,
   saveRequest,
   saveSoundSettings,
   saveWorkout,

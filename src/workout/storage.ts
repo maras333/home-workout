@@ -5,6 +5,7 @@ import type { Workout, WorkoutRequest } from './types'
 const REQUEST_KEY = 'home-workout:last-request'
 const WORKOUT_KEY = 'home-workout:current-workout'
 const SOUND_KEY = 'home-workout:sound-settings'
+const PROGRESS_KEY = 'home-workout:follow-along-progress'
 
 const DEFAULT_REQUEST: WorkoutRequest = {
   workoutType: 'full body',
@@ -19,6 +20,14 @@ function read(key: string): unknown {
     return raw === null ? null : JSON.parse(raw)
   } catch {
     return null
+  }
+}
+
+function remove(key: string): void {
+  try {
+    localStorage.removeItem(key)
+  } catch {
+    // Storage blocked: nothing was saved there anyway.
   }
 }
 
@@ -97,8 +106,10 @@ export function loadWorkout(): Workout | null {
   return isWorkout(value) ? value : null
 }
 
+/** Saves the current Workout; progress through the one it replaces no longer applies. */
 export function saveWorkout(workout: Workout): void {
   write(WORKOUT_KEY, workout)
+  remove(PROGRESS_KEY)
 }
 
 /** Follow-along's beeps and voice, each on or off. */
@@ -116,4 +127,37 @@ export function loadSoundSettings(): SoundSettings {
 
 export function saveSoundSettings(settings: SoundSettings): void {
   write(SOUND_KEY, settings)
+}
+
+/** Follow-along progress older than this is ignored: the Workout was left long ago. */
+const PROGRESS_MAX_AGE_MS = 12 * 60 * 60 * 1000
+
+/**
+ * The index of the Step Follow-along was on, or null when nothing is saved, it is corrupt,
+ * or it is too old (then it is cleared as well).
+ */
+export function loadProgress(): number | null {
+  const value = read(PROGRESS_KEY)
+  if (
+    !isRecord(value) ||
+    !Number.isInteger(value.index) ||
+    (value.index as number) < 0 ||
+    typeof value.savedAt !== 'number'
+  ) {
+    return null
+  }
+  if (Date.now() - value.savedAt > PROGRESS_MAX_AGE_MS) {
+    remove(PROGRESS_KEY)
+    return null
+  }
+  return value.index as number
+}
+
+/** Remembers the Step Follow-along is on, with when it was saved. */
+export function saveProgress(index: number): void {
+  write(PROGRESS_KEY, { index, savedAt: Date.now() })
+}
+
+export function clearProgress(): void {
+  remove(PROGRESS_KEY)
 }
