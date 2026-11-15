@@ -55,6 +55,18 @@ export type Dictionary = {
     credit: string
     sourceCode: string
   }
+  favourites: {
+    heading: string
+    start: string
+    delete: string
+    unavailable: string
+    deleteTitle: string
+    cancel: string
+    save: string
+    full: string
+    /** Abbreviated, January first, for names like "14 Nov". */
+    months: readonly string[]
+  }
 }
 
 const englishRules = new Intl.PluralRules('en')
@@ -151,6 +163,17 @@ const en: Dictionary = {
     credit: 'Exercise data & GIFs:',
     sourceCode: 'Source code',
   },
+  favourites: {
+    heading: 'Favourites',
+    start: 'Start',
+    delete: 'Delete',
+    unavailable: 'No longer available',
+    deleteTitle: 'Delete this Favourite?',
+    cancel: 'Cancel',
+    save: 'Save',
+    full: 'Favourites full — delete one first',
+    months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+  },
 }
 
 const pl: Dictionary = {
@@ -229,6 +252,17 @@ const pl: Dictionary = {
   footer: {
     credit: 'Dane ćwiczeń i GIF-y:',
     sourceCode: 'Kod źródłowy',
+  },
+  favourites: {
+    heading: 'Ulubione',
+    start: 'Start',
+    delete: 'Usuń',
+    unavailable: 'Niedostępny',
+    deleteTitle: 'Usunąć z Ulubionych?',
+    cancel: 'Anuluj',
+    save: 'Zapisz',
+    full: 'Ulubione pełne — usuń jeden',
+    months: ['sty', 'lut', 'mar', 'kwi', 'maj', 'cze', 'lip', 'sie', 'wrz', 'paź', 'lis', 'gru'],
   },
 }
 

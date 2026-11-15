@@ -2,6 +2,7 @@ export * from './types'
 export { generate } from './generate'
 export { canSwap, swap, type SetPosition } from './swap'
 export { seededRandom } from './random'
+export { dayOf, formatDay, type Day } from './day'
 export { allSets, exerciseCount, plannedSeconds, setSeconds } from './workout'
 export { favouriteOf, isAvailable } from './favourites'
 export {
@@ -23,6 +24,7 @@ export {
 export {
   durationText,
   equipmentText,
+  favouriteLabel,
   favouriteName,
   requestSummary,
   roundsText,

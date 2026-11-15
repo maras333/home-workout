@@ -1,7 +1,8 @@
 import { dictionaries } from '@/language/dictionaries'
 import type { Language } from '@/language/types'
 import type { Equipment, MuscleGroups } from '@/library'
-import type { MainBlock, WorkoutRequest, WorkoutSet } from './types'
+import { parseDay, type Day } from './day'
+import type { Favourite, MainBlock, WorkoutRequest, WorkoutSet } from './types'
 
 /** e.g. "Dumbbells, Kettlebell", or "Bodyweight" for none */
 export function equipmentText(equipment: readonly Equipment[], language: Language): string {
@@ -28,12 +29,19 @@ export function requestSummary(request: WorkoutRequest, language: Language): str
   )
 }
 
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-
 /** A Favourite's automatic name, e.g. "Full body · 30 min · Intermediate · 14 Nov" */
-export function favouriteName(request: WorkoutRequest, savedOn: Date): string {
-  const date = `${savedOn.getDate()} ${MONTHS[savedOn.getMonth()]}`
-  return [...requestParts(request, 'en'), date].join(' · ')
+export function favouriteName(request: WorkoutRequest, savedOn: Day, language: Language): string {
+  const date = `${savedOn.day} ${dictionaries[language].favourites.months[savedOn.month - 1]}`
+  return [...requestParts(request, language), date].join(' · ')
+}
+
+/**
+ * The name a Favourite shows: built in the Language from its Workout and the day it was
+ * saved, or, for one saved before that day was kept, the name it was saved with.
+ */
+export function favouriteLabel({ name, savedOn, workout }: Favourite, language: Language): string {
+  const day = savedOn === undefined ? null : parseDay(savedOn)
+  return day ? favouriteName(workout.request, day, language) : name
 }
 
 /** e.g. "12 reps", "40 s per side" */

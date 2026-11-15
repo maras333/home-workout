@@ -1,7 +1,10 @@
 import { useState } from 'react'
+import { useLanguage } from '@/language'
 import {
+  dayOf,
   favouriteName,
   favouriteOf,
+  formatDay,
   loadFavourites,
   MAX_FAVOURITES,
   saveFavourites,
@@ -31,6 +34,7 @@ function newId(): string {
  */
 export function useFavourites(): FavouritesStore {
   const [favourites, setFavourites] = useState(loadFavourites)
+  const { language } = useLanguage()
 
   const change = (edit: (stored: Favourite[]) => Favourite[]) => {
     const next = edit(loadFavourites())
@@ -46,8 +50,9 @@ export function useFavourites(): FavouritesStore {
       const existing = favouriteOf(stored, workout)
       if (existing) return stored.filter((favourite) => favourite !== existing)
       if (stored.length >= MAX_FAVOURITES) return stored
-      const name = favouriteName(workout.request, new Date())
-      return [{ id: newId(), name, workout }, ...stored]
+      const today = dayOf(new Date())
+      const name = favouriteName(workout.request, today, language)
+      return [{ id: newId(), name, workout, savedOn: formatDay(today) }, ...stored]
     })
 
   return { favourites, full: favourites.length >= MAX_FAVOURITES, toggle, remove }

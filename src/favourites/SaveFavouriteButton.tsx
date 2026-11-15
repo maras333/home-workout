@@ -1,6 +1,7 @@
 import { useId } from 'react'
 import { cn } from 'cn'
 import { Button } from '@/components/ui/button'
+import { useText } from '@/language'
 import { favouriteOf, type Workout } from '@/workout'
 import { useFavourites } from './use-favourites'
 
@@ -8,6 +9,7 @@ import { useFavourites } from './use-favourites'
 export function SaveFavouriteButton({ workout }: { workout: Workout }) {
   const { favourites, full, toggle } = useFavourites()
   const hintId = useId()
+  const text = useText().favourites
   const saved = favouriteOf(favourites, workout) !== null
   const blocked = full && !saved
 
@@ -15,7 +17,7 @@ export function SaveFavouriteButton({ workout }: { workout: Workout }) {
     <div className="flex items-center gap-2">
       {blocked && (
         <p id={hintId} className="text-muted-foreground text-sm">
-          Favourites full — delete one first
+          {text.full}
         </p>
       )}
       <Button
@@ -29,7 +31,7 @@ export function SaveFavouriteButton({ workout }: { workout: Workout }) {
         onClick={() => !blocked && toggle(workout)}
       >
         <span aria-hidden="true">{saved ? '★' : '☆'}</span>
-        Save
+        {text.save}
       </Button>
     </div>
   )

@@ -337,10 +337,10 @@ describe('the Workout preview in Polish', () => {
   it('keeps a saved Favourite matching after switching the Language', async () => {
     const user = userEvent.setup()
     renderAt('/workout')
-    await user.click(screen.getByRole('button', { name: /Save/ }))
+    await user.click(screen.getByRole('button', { name: 'Zapisz' }))
 
     await user.click(screen.getByRole('button', { name: 'EN' }))
 
-    expect(screen.getByRole('button', { name: /Save/ })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('button', { name: 'Save' })).toHaveAttribute('aria-pressed', 'true')
   })
 })

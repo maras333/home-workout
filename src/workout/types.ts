@@ -43,7 +43,14 @@ export type Workout = {
 export type RandomSource = () => number
 
 /** A Workout the user saved to start again later: a frozen copy, named automatically. */
-export type Favourite = { id: string; name: string; workout: Workout }
+export type Favourite = {
+  id: string
+  /** The name in the Language it was saved in; shown only when there is no `savedOn`. */
+  name: string
+  workout: Workout
+  /** The day it was saved, "2026-11-14"; missing on Favourites saved before it was kept. */
+  savedOn?: string
+}
 
 /** Favourites are capped; nothing is ever removed behind the user's back. */
 export const MAX_FAVOURITES = 20
