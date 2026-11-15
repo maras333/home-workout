@@ -1,31 +1,31 @@
-import type { Difficulty, Equipment, WorkoutType } from '@/library'
+import { dictionaries } from '@/language/dictionaries'
+import type { Language } from '@/language/types'
+import type { Equipment, MuscleGroups } from '@/library'
 import type { MainBlock, WorkoutRequest, WorkoutSet } from './types'
 
-function capitalise(text: string): string {
-  return text.charAt(0).toUpperCase() + text.slice(1)
-}
-
-export const workoutTypeLabel = (type: WorkoutType) => capitalise(type)
-export const difficultyLabel = (difficulty: Difficulty) => capitalise(difficulty)
-export const equipmentLabel = (item: Equipment) => capitalise(item)
-
 /** e.g. "Dumbbells, Kettlebell", or "Bodyweight" for none */
-export function equipmentText(equipment: readonly Equipment[]): string {
-  return equipment.length > 0 ? equipment.map(equipmentLabel).join(', ') : 'Bodyweight'
+export function equipmentText(equipment: readonly Equipment[], language: Language): string {
+  const { terms } = dictionaries[language]
+  return equipment.length > 0
+    ? equipment.map((item) => terms.equipment[item]).join(', ')
+    : terms.bodyweight
 }
 
 /** e.g. ["Full body", "30 min", "Intermediate"] */
-function requestParts(request: WorkoutRequest): string[] {
+function requestParts(request: WorkoutRequest, language: Language): string[] {
+  const { terms, counts } = dictionaries[language]
   return [
-    workoutTypeLabel(request.workoutType),
-    `${request.minutes} min`,
-    difficultyLabel(request.difficulty),
+    terms.workoutTypes[request.workoutType],
+    counts.minutes(request.minutes),
+    terms.difficulties[request.difficulty].label,
   ]
 }
 
 /** e.g. "Full body · 30 min · Intermediate · Dumbbells, Kettlebell" */
-export function requestSummary(request: WorkoutRequest): string {
-  return [...requestParts(request), equipmentText(request.equipment)].join(' · ')
+export function requestSummary(request: WorkoutRequest, language: Language): string {
+  return [...requestParts(request, language), equipmentText(request.equipment, language)].join(
+    ' · ',
+  )
 }
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -33,24 +33,34 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
 /** A Favourite's automatic name, e.g. "Full body · 30 min · Intermediate · 14 Nov" */
 export function favouriteName(request: WorkoutRequest, savedOn: Date): string {
   const date = `${savedOn.getDate()} ${MONTHS[savedOn.getMonth()]}`
-  return [...requestParts(request), date].join(' · ')
+  return [...requestParts(request, 'en'), date].join(' · ')
 }
 
 /** e.g. "12 reps", "40 s per side" */
-export function targetText({ target, perSide }: WorkoutSet): string {
-  const amount = target.measure === 'reps' ? `${target.reps} reps` : `${target.seconds} s`
-  return perSide ? `${amount} per side` : amount
+export function targetText({ target, perSide }: WorkoutSet, language: Language): string {
+  const { counts } = dictionaries[language]
+  const amount =
+    target.measure === 'reps' ? counts.reps(target.reps) : counts.seconds(target.seconds)
+  return perSide ? counts.perSide(amount) : amount
 }
 
 /** e.g. "5 Exercises × 4 Rounds (last Round: 2 Exercises)" */
-export function roundsText({ sets, rounds, lastRoundSets }: MainBlock): string {
-  const plural = (count: number, word: string) => `${count} ${word}${count === 1 ? '' : 's'}`
+export function roundsText({ sets, rounds, lastRoundSets }: MainBlock, language: Language): string {
+  const { counts, preview } = dictionaries[language]
   const partial =
-    lastRoundSets < sets.length ? ` (last Round: ${plural(lastRoundSets, 'Exercise')})` : ''
-  return `${plural(sets.length, 'Exercise')} × ${plural(rounds, 'Round')}${partial}`
+    lastRoundSets < sets.length ? ` (${preview.lastRound(counts.exercises(lastRoundSets))})` : ''
+  return `${counts.exercises(sets.length)} × ${counts.rounds(rounds)}${partial}`
 }
 
 /** e.g. "29 min" */
-export function durationText(seconds: number): string {
-  return `${Math.round(seconds / 60)} min`
+export function durationText(seconds: number, language: Language): string {
+  return dictionaries[language].counts.minutes(Math.round(seconds / 60))
+}
+
+/** The Muscle-group line, e.g. "Trains: chest (also arms, shoulders)" */
+export function trainsText({ primary, secondary }: MuscleGroups, language: Language): string {
+  const { terms, exercise } = dictionaries[language]
+  const words = (groups: MuscleGroups['primary']) =>
+    groups.map((group) => terms.muscleGroups[group]).join(', ')
+  return exercise.trains(words(primary), secondary.length > 0 ? words(secondary) : null)
 }

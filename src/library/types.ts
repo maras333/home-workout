@@ -53,8 +53,6 @@ export type Exercise = ExerciseTags & {
   id: string
   name: string
   steps: string[]
-  /** "Trains: …" text derived from the Muscle groups. */
-  trains: string
   /** Static file path of the Exercise's GIF. */
   gifUrl: string
 }

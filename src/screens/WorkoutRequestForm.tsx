@@ -64,7 +64,7 @@ function RadioCard({
 
 export function WorkoutRequestForm() {
   const navigate = useNavigate()
-  const text = useText().request
+  const { request: text, terms, counts } = useText()
   const [request, setRequest] = useState<WorkoutRequest>(loadRequest)
 
   function update(changes: Partial<WorkoutRequest>) {
@@ -89,7 +89,7 @@ export function WorkoutRequestForm() {
               <RadioCard
                 key={type}
                 name="workout-type"
-                label={text.workoutTypes[type]}
+                label={terms.workoutTypes[type]}
                 checked={request.workoutType === type}
                 onChange={() => update({ workoutType: type })}
               />
@@ -103,7 +103,7 @@ export function WorkoutRequestForm() {
               <RadioCard
                 key={minutes}
                 name="minutes"
-                label={text.minutes(minutes)}
+                label={counts.minutes(minutes)}
                 checked={request.minutes === minutes}
                 onChange={() => update({ minutes })}
               />
@@ -117,8 +117,8 @@ export function WorkoutRequestForm() {
               <RadioCard
                 key={difficulty}
                 name="difficulty"
-                label={text.difficulties[difficulty].label}
-                hint={text.difficulties[difficulty].hint}
+                label={terms.difficulties[difficulty].label}
+                hint={terms.difficulties[difficulty].hint}
                 checked={request.difficulty === difficulty}
                 onChange={() => update({ difficulty })}
               />
@@ -142,7 +142,7 @@ export function WorkoutRequestForm() {
                     })
                   }
                 />
-                {text.equipmentItems[item]}
+                {terms.equipment[item]}
               </label>
             ))}
           </div>

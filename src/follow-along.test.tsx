@@ -11,7 +11,6 @@ function exercise(id: string, name: string): Exercise {
     id,
     name,
     steps: ['Do it.'],
-    trains: 'Trains: legs',
     gifUrl: `/exercisedb/${id}.gif`,
     muscleGroups: { primary: ['legs'], secondary: [] },
     equipment: [],

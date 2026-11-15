@@ -1,15 +1,10 @@
 import { curation } from './curation'
 import records from './exercisedb/exercises.json'
-import type { Exercise, ExerciseTags, MuscleGroups } from './types'
+import type { Exercise, ExerciseTags } from './types'
 
 export * from './types'
 
 type ExerciseRecord = { exerciseId: string; name: string; instructions: string[] }
-
-function trainsText({ primary, secondary }: MuscleGroups): string {
-  const also = secondary.length > 0 ? ` (also ${secondary.join(', ')})` : ''
-  return `Trains: ${primary.join(', ')}${also}`
-}
 
 function toExercise(record: ExerciseRecord, tags: ExerciseTags): Exercise {
   return {
@@ -17,7 +12,6 @@ function toExercise(record: ExerciseRecord, tags: ExerciseTags): Exercise {
     id: record.exerciseId,
     name: record.name,
     steps: record.instructions.map((step) => step.replace(/^Step:\d+\s+/, '')),
-    trains: trainsText(tags.muscleGroups),
     gifUrl: `/exercisedb/${record.exerciseId}.gif`,
   }
 }

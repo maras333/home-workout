@@ -9,7 +9,6 @@ export function exercise(overrides: Partial<Exercise> = {}): Exercise {
     id,
     name: id,
     steps: ['Do it.'],
-    trains: 'Trains: legs',
     gifUrl: `/exercisedb/${id}.gif`,
     muscleGroups: { primary: ['legs'], secondary: [] },
     equipment: [],

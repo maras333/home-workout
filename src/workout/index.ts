@@ -21,13 +21,11 @@ export {
   type SoundSettings,
 } from './storage'
 export {
-  difficultyLabel,
   durationText,
-  equipmentLabel,
   equipmentText,
   favouriteName,
   requestSummary,
   roundsText,
   targetText,
-  workoutTypeLabel,
+  trainsText,
 } from './text'

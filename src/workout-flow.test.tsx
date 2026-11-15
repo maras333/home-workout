@@ -4,7 +4,6 @@ import { MemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { App } from '@/App'
 import { library } from '@/library'
-import { difficultyLabel, equipmentLabel } from '@/workout'
 
 function renderAt(path: string) {
   return render(
@@ -212,15 +211,15 @@ describe('Workout preview', () => {
         .getAllByRole('listitem')
         .map((step) => step.textContent),
     ).toEqual(exercise.steps)
-    expect(dialog).toHaveTextContent(exercise.trains)
-    expect(exercise.trains).toMatch(/^Trains: /)
+    const { primary, secondary } = exercise.muscleGroups
+    const also = secondary.length > 0 ? ` (also ${secondary.join(', ')})` : ''
+    expect(dialog).toHaveTextContent(`Trains: ${primary.join(', ')}${also}`)
     // Spelled out here rather than calling equipmentText, as an independent check.
+    const capitalise = (word: string) => word.charAt(0).toUpperCase() + word.slice(1)
     const equipment =
-      exercise.equipment.length > 0
-        ? exercise.equipment.map(equipmentLabel).join(', ')
-        : 'Bodyweight'
+      exercise.equipment.length > 0 ? exercise.equipment.map(capitalise).join(', ') : 'Bodyweight'
     expect(dialog).toHaveTextContent(`Equipment: ${equipment}`)
-    expect(dialog).toHaveTextContent(`Difficulty: ${difficultyLabel(exercise.difficulty)}`)
+    expect(dialog).toHaveTextContent(`Difficulty: ${capitalise(exercise.difficulty)}`)
 
     await user.click(within(dialog).getByRole('button', { name: 'Close' }))
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()

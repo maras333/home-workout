@@ -90,14 +90,6 @@ describe('Exercise library data check', () => {
     )
   })
 
-  it('derives the "Trains: …" text from Muscle groups', () => {
-    const pushUp = library.find((exercise) => exercise.id === 'I4hDWkc')
-    const calfRaise = library.find((exercise) => exercise.id === 'bJYHBIN')
-
-    expect(pushUp?.trains).toBe('Trains: chest (also arms, shoulders, core)')
-    expect(calfRaise?.trains).toBe('Trains: legs')
-  })
-
   // Eligible at a Difficulty means tagged at or below it, as in the spec's
   // eligibility rule, so Beginner is the tightest case.
   function bodyweightPool(type: WorkoutType, role: BlockRole, difficulty: Difficulty) {

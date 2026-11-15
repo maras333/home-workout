@@ -3,6 +3,8 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { App } from '@/App'
+import { library } from '@/library'
+import type { Target, Workout, WorkoutSet } from '@/workout'
 
 const LANGUAGE_KEY = 'home-workout:language'
 
@@ -16,6 +18,54 @@ function renderAt(path: string) {
 
 function browserLanguages(...languages: string[]) {
   vi.spyOn(navigator, 'languages', 'get').mockReturnValue(languages)
+}
+
+function libraryExercise(id: string) {
+  const found = library.find((exercise) => exercise.id === id)
+  if (!found) throw new Error(`No Exercise ${id}`)
+  return found
+}
+
+const PUSH_UP = 'I4hDWkc'
+const CALF_RAISE = 'bJYHBIN'
+
+function set(id: string, target: Target, perSide = false): WorkoutSet {
+  return { exercise: libraryExercise(id), target, perSide }
+}
+
+const reps = (count: number): Target => ({ measure: 'reps', reps: count })
+
+/** A Workout with known targets and counts, saved as if just generated. */
+function storeWorkout(rounds = 4) {
+  const workout: Workout = {
+    request: { workoutType: 'lower body', minutes: 15, difficulty: 'beginner', equipment: [] },
+    warmUp: [set(CALF_RAISE, reps(1))],
+    main: {
+      sets: [
+        set(PUSH_UP, reps(3)),
+        set(CALF_RAISE, reps(12)),
+        set(PUSH_UP, reps(22)),
+        set(CALF_RAISE, { measure: 'time', seconds: 40 }, true),
+        set(PUSH_UP, reps(5)),
+      ],
+      rounds,
+      lastRoundSets: 2,
+      restSeconds: 20,
+      roundRestSeconds: 60,
+    },
+    coolDown: [set(CALF_RAISE, { measure: 'time', seconds: 30 })],
+  }
+  localStorage.setItem('home-workout:current-workout', JSON.stringify(workout))
+}
+
+/** Each row's target in a Block: the row's text after the Exercise name, before Swap. */
+function blockTargets(name: RegExp) {
+  return within(screen.getByRole('region', { name }))
+    .getAllByRole('listitem')
+    .map((row) => {
+      const exerciseName = within(row).getByRole('img').getAttribute('alt') ?? ''
+      return within(row).getAllByRole('button')[0].textContent?.slice(exerciseName.length)
+    })
 }
 
 function languageSwitch() {
@@ -157,6 +207,81 @@ describe('in Polish', () => {
     expect(within(footer).getByRole('link', { name: 'Kod źródłowy' })).toHaveAttribute(
       'href',
       'https://github.com/maras333/home-workout',
+    )
+  })
+})
+
+describe('the Workout preview in Polish', () => {
+  beforeEach(() => {
+    browserLanguages('pl-PL')
+    storeWorkout()
+  })
+
+  it('shows the summary, the Blocks and the targets with Polish plural forms', () => {
+    renderAt('/workout')
+
+    expect(screen.getByRole('heading', { level: 1, name: 'Podgląd treningu' })).toBeInTheDocument()
+    expect(screen.getByText('Dół ciała · 15 min · Początkujący · Bez sprzętu')).toBeInTheDocument()
+    expect(screen.getByText(/^Planowany czas: /)).toHaveTextContent(
+      /^Planowany czas: \d+ min · 7 Ćwiczeń$/,
+    )
+    expect(screen.getByRole('heading', { level: 2, name: 'Rozgrzewka' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', {
+        level: 2,
+        name: 'Część główna · 5 Ćwiczeń × 4 Rundy (ostatnia Runda: 2 Ćwiczenia)',
+      }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 2, name: 'Wyciszenie' })).toBeInTheDocument()
+
+    expect(blockTargets(/^Rozgrzewka/)).toEqual(['1 powtórzenie'])
+    expect(blockTargets(/^Część główna/)).toEqual([
+      '3 powtórzenia',
+      '12 powtórzeń',
+      '22 powtórzenia',
+      '40 s na stronę',
+      '5 powtórzeń',
+    ])
+    expect(blockTargets(/^Wyciszenie/)).toEqual(['30 s'])
+  })
+
+  it('shows the top bar and Swap in Polish', () => {
+    renderAt('/workout')
+
+    const actions = screen.getByRole('navigation', { name: 'Akcje treningu' })
+    expect(within(actions).getByRole('button', { name: '← Zmień zgłoszenie' })).toBeInTheDocument()
+    expect(within(actions).getByRole('button', { name: 'Wygeneruj inny' })).toBeInTheDocument()
+    expect(within(actions).getByRole('button', { name: 'Rozpocznij trening' })).toBeInTheDocument()
+    const warmUp = screen.getByRole('region', { name: 'Rozgrzewka' })
+    expect(within(warmUp).getByRole('button', { name: /^Zamień / })).toHaveTextContent('Zamień')
+  })
+
+  it('shows the Exercise detail dialog in Polish', async () => {
+    const user = userEvent.setup()
+    renderAt('/workout')
+    const main = screen.getByRole('region', { name: /^Część główna/ })
+    const pushUpRow = within(main).getAllByRole('listitem')[0]
+
+    await user.click(within(pushUpRow).getAllByRole('button')[0])
+
+    const dialog = screen.getByRole('dialog', { name: 'push-up' })
+    expect(dialog).toHaveTextContent('Ćwiczy: klatka piersiowa (także ręce, barki, brzuch)')
+    expect(dialog).toHaveTextContent('Sprzęt: Bez sprzętu')
+    expect(dialog).toHaveTextContent('Poziom: Średni')
+
+    await user.click(within(dialog).getByRole('button', { name: 'Zamknij' }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+
+  it.each([
+    [1, '1 Runda'],
+    [5, '5 Rund'],
+  ])('names %i Rounds with the Polish plural form', (rounds, text) => {
+    storeWorkout(rounds)
+    renderAt('/workout')
+
+    expect(screen.getByRole('heading', { level: 2, name: /^Część główna/ })).toHaveTextContent(
+      `Część główna · 5 Ćwiczeń × ${text} (ostatnia Runda: 2 Ćwiczenia)`,
     )
   })
 })

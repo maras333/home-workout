@@ -188,7 +188,7 @@ function TimelineRow({ set, state }: { set: WorkoutSet; state: 'done' | 'now' | 
       />
       {state === 'done' && <span className="sr-only">Done: </span>}
       <span className="flex-1 capitalize">{set.exercise.name}</span>
-      <span className="tabular-nums">{targetText(set)}</span>
+      <span className="tabular-nums">{targetText(set, 'en')}</span>
     </li>
   )
 }
@@ -221,7 +221,7 @@ function NowPlaying({ player, upNext }: { player: Player; upNext: WorkStep | nul
                 {step.round !== undefined && ` · Round ${step.round} of ${step.rounds}`}
               </p>
               <h1 className="text-4xl font-bold capitalize">{step.set.exercise.name}</h1>
-              <p className="text-xl">{targetText(step.set)}</p>
+              <p className="text-xl">{targetText(step.set, 'en')}</p>
               {side && (
                 <p
                   className={cn(
@@ -244,7 +244,7 @@ function NowPlaying({ player, upNext }: { player: Player; upNext: WorkStep | nul
                 <>
                   <p className="text-muted-foreground text-sm tracking-widest uppercase">Up next</p>
                   <p className="text-2xl font-semibold capitalize">{shown.set.exercise.name}</p>
-                  <p className="text-xl">{targetText(shown.set)}</p>
+                  <p className="text-xl">{targetText(shown.set, 'en')}</p>
                 </>
               )}
             </>

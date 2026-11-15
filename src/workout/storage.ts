@@ -1,4 +1,4 @@
-import { DIFFICULTIES, EQUIPMENT, WORKOUT_TYPES } from '@/library'
+import { DIFFICULTIES, EQUIPMENT, MUSCLE_GROUPS, WORKOUT_TYPES } from '@/library'
 import { LANGUAGES, type Language } from '@/language/types'
 import { MINUTES } from './types'
 import type { Favourite, Workout, WorkoutRequest } from './types'
@@ -61,6 +61,10 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null
 }
 
+function isMuscleGroupList(value: unknown): boolean {
+  return Array.isArray(value) && value.every((group) => includes(MUSCLE_GROUPS, group))
+}
+
 function isSet(value: unknown): boolean {
   if (!isRecord(value) || !isRecord(value.exercise) || !isRecord(value.target)) return false
   const { exercise, target } = value
@@ -68,6 +72,9 @@ function isSet(value: unknown): boolean {
     typeof exercise.id === 'string' &&
     typeof exercise.name === 'string' &&
     typeof exercise.gifUrl === 'string' &&
+    isRecord(exercise.muscleGroups) &&
+    isMuscleGroupList(exercise.muscleGroups.primary) &&
+    isMuscleGroupList(exercise.muscleGroups.secondary) &&
     typeof value.perSide === 'boolean' &&
     ((target.measure === 'reps' && typeof target.reps === 'number') ||
       (target.measure === 'time' && typeof target.seconds === 'number'))

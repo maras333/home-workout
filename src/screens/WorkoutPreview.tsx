@@ -4,6 +4,7 @@ import { Shuffle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ExerciseDetailDialog } from '@/components/ExerciseDetailDialog'
 import { SaveFavouriteButton } from '@/favourites/SaveFavouriteButton'
+import { useLanguage, useText } from '@/language'
 import { library, type Exercise } from '@/library'
 import {
   canSwap,
@@ -38,6 +39,8 @@ function BlockSection({
   onSwap: (index: number) => void
 }) {
   const headingId = useId()
+  const { language } = useLanguage()
+  const text = useText().preview
   return (
     <section aria-labelledby={headingId} className="flex flex-col gap-2">
       <h2 id={headingId} className="text-lg font-semibold">
@@ -60,16 +63,16 @@ function BlockSection({
                 className="size-14 rounded"
               />
               <span className="flex-1 capitalize">{set.exercise.name}</span>
-              <span className="text-muted-foreground">{targetText(set)}</span>
+              <span className="text-muted-foreground">{targetText(set, language)}</span>
             </button>
             <Button
               variant="outline"
-              aria-label={`Swap ${set.exercise.name}`}
+              aria-label={text.swapExercise(set.exercise.name)}
               disabled={!canSwapAt(index)}
               onClick={() => onSwap(index)}
             >
               <Shuffle aria-hidden="true" />
-              Swap
+              {text.swap}
             </Button>
           </li>
         ))}
@@ -82,6 +85,8 @@ export function WorkoutPreview() {
   const [workout, setWorkout] = useState(loadWorkout)
   const [detailExercise, setDetailExercise] = useState<Exercise | null>(null)
   const navigate = useNavigate()
+  const { language } = useLanguage()
+  const { preview: text, counts } = useText()
   if (!workout) return <Navigate to="/" replace />
 
   function generateAnother(previous: Workout) {
@@ -112,17 +117,17 @@ export function WorkoutPreview() {
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6 p-8">
-      <nav aria-label="Workout actions" className="flex flex-wrap items-center gap-2">
+      <nav aria-label={text.actions} className="flex flex-wrap items-center gap-2">
         <Button
           variant="ghost"
           size="lg"
           className="mr-auto"
           onClick={() => changeRequest(workout)}
         >
-          ← Change request
+          {text.changeRequest}
         </Button>
         <Button variant="secondary" size="lg" onClick={() => generateAnother(workout)}>
-          Generate another
+          {text.generateAnother}
         </Button>
         <SaveFavouriteButton workout={workout} />
         <Button
@@ -133,25 +138,27 @@ export function WorkoutPreview() {
             navigate('/follow-along')
           }}
         >
-          Start Workout
+          {text.start}
         </Button>
       </nav>
       <header className="flex flex-col gap-1">
-        <h1 className="text-3xl font-bold">Workout preview</h1>
-        <p>{requestSummary(workout.request)}</p>
+        <h1 className="text-3xl font-bold">{text.heading}</h1>
+        <p>{requestSummary(workout.request, language)}</p>
         <p className="text-muted-foreground">
-          Planned total: {durationText(plannedSeconds(workout))} · {exerciseCount(workout)}{' '}
-          Exercises
+          {text.plannedTotal(
+            durationText(plannedSeconds(workout), language),
+            counts.exercises(exerciseCount(workout)),
+          )}
         </p>
       </header>
-      <BlockSection title="Warm-up" sets={workout.warmUp} {...rowActions(workout, 'warmUp')} />
+      <BlockSection title={text.warmUp} sets={workout.warmUp} {...rowActions(workout, 'warmUp')} />
       <BlockSection
-        title={`Main · ${roundsText(workout.main)}`}
+        title={`${text.main} · ${roundsText(workout.main, language)}`}
         sets={workout.main.sets}
         {...rowActions(workout, 'main')}
       />
       <BlockSection
-        title="Cool-down"
+        title={text.coolDown}
         sets={workout.coolDown}
         {...rowActions(workout, 'coolDown')}
       />
