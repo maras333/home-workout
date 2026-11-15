@@ -6,7 +6,7 @@ Spec: [Home Workout MVP](../../home-workout-mvp/spec.md), section "Screens"
 
 **Blocked by:** [03: Generate a basic Workout and preview it](03-generate-basic-workout-and-preview.md)
 
-**Status:** ready-for-agent
+**Status:** done
 
 - [x] Top bar: "← Change request" on the left; "Generate another" (secondary) and Start Workout (primary) on the right (Start may point at the Follow-along placeholder until ticket 07)
 - [x] "Generate another" replaces the Workout immediately, without confirmation, passing the previous Workout so generation steers away from its main-Block Exercises when the pool allows

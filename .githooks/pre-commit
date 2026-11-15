@@ -1,0 +1,6 @@
+#!/bin/sh
+# Fast checks before each commit; the full suite runs in CI (npm run check).
+set -e
+npm run --silent typecheck
+npm run --silent lint
+npm run --silent format:check

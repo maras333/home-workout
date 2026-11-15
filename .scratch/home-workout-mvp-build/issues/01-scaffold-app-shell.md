@@ -6,7 +6,7 @@ Spec: [Home Workout MVP](../../home-workout-mvp/spec.md)
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** done
 
 - [x] Vite + React + TypeScript (strict mode) app at the repo root; `npm run dev`, `npm run build`, `npm test` and `npm run lint` all work
 - [x] Tailwind CSS v4 through its Vite plugin; shadcn/ui set up with the `@/` alias to the source folder (no components added beyond what this ticket uses)

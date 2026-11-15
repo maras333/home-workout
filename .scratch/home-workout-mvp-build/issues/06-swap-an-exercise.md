@@ -6,7 +6,7 @@ Spec: [Home Workout MVP](../../home-workout-mvp/spec.md), sections "Workout gene
 
 **Blocked by:** [03: Generate a basic Workout and preview it](03-generate-basic-workout-and-preview.md)
 
-**Status:** ready-for-agent
+**Status:** done
 
 - [x] `swap(workout, position, library, random)` is pure and picks at random among Exercises eligible for the same Block and not already in the Workout, preferring the same primary Muscle group
 - [x] Swapping a main-Block Exercise changes it in every Round, then refits the Rounds to the time

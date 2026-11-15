@@ -6,7 +6,7 @@ Spec: [Home Workout MVP](../../home-workout-mvp/spec.md), section "Exercise libr
 
 **Blocked by:** [01: Scaffold the app shell with the credit footer](01-scaffold-app-shell.md)
 
-**Status:** ready-for-agent
+**Status:** done
 
 - [x] A one-off script that, given a list of Exercise ids, copies their records and GIFs unmodified from `bootstrapping-lab/exercisedb-api` at commit `7cdc82e`; rerunning it with a changed list updates the copy
 - [x] The folder holding the copied files has a README naming the source repo and commit, stating the files are an unmodified subset, and pointing to the AGPL-3.0 licence

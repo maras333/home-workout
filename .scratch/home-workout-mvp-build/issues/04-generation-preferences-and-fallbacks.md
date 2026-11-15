@@ -6,7 +6,7 @@ Spec: [Home Workout MVP](../../home-workout-mvp/spec.md), section "Workout gener
 
 **Blocked by:** [03: Generate a basic Workout and preview it](03-generate-basic-workout-and-preview.md)
 
-**Status:** ready-for-agent
+**Status:** done
 
 - [x] The main Block prefers Exercises at exactly the requested Difficulty
 - [x] If any Equipment is ticked, at least half the main Block uses it when the pool allows

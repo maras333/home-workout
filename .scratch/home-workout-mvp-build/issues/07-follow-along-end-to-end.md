@@ -6,7 +6,7 @@ Spec: [Home Workout MVP](../../home-workout-mvp/spec.md), sections "Screens" (Fo
 
 **Blocked by:** [03: Generate a basic Workout and preview it](03-generate-basic-workout-and-preview.md)
 
-**Status:** ready-for-agent
+**Status:** done
 
 - [x] The current Workout is flattened into an ordered list of Sets and rests (shape from the prototype, see the spec's "Workout model")
 - [x] Start Workout opens Follow-along with a 5 s "Get ready" countdown showing the first Exercise as "up next"

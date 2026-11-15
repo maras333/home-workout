@@ -6,7 +6,7 @@ Spec: [Home Workout MVP](../../home-workout-mvp/spec.md), sections "Workout mode
 
 **Blocked by:** [02: Exercise library pipeline with a starter set](02-exercise-library-pipeline.md)
 
-**Status:** ready-for-agent
+**Status:** done
 
 - [x] Form: six workout-type cards (default full body), time presets 15/30/45/60 (default 30), Difficulty with its one-line hints (default Intermediate), four Equipment checkboxes (all unchecked), Generate
 - [x] The last Workout Request is saved in browser storage and prefills the form; a missing or corrupt value falls back to the defaults
