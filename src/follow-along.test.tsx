@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { App } from '@/App'
 import { library, type Exercise } from '@/library'
 import type { Workout, WorkoutSet } from '@/workout'
+import { fakeViewport } from '@/test/viewport'
 
 function exercise(id: string, name: string): Exercise {
   return {
@@ -862,5 +863,134 @@ describe('End Workout', () => {
     await user.keyboard('{Escape}')
 
     expectSet('arm circle', '20 s', '0:20')
+  })
+})
+
+describe('Follow-along on a laptop', () => {
+  it('shows the Timeline beside the Exercise, with no button for it', () => {
+    fakeViewport('laptop')
+    renderAt('/follow-along')
+
+    const aside = screen.getByRole('complementary')
+    expect(within(aside).getByRole('region', { name: 'Warm-up' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Timeline' })).not.toBeInTheDocument()
+  })
+})
+
+describe('Follow-along on a phone', () => {
+  const panel = () => screen.getByRole('dialog', { name: 'Timeline' })
+  // While the panel is open, the rest of the screen is hidden from the accessibility tree.
+  const shownTimeLeft = () => screen.getByRole('timer', { name: 'Time left', hidden: true })
+
+  it('hides the Timeline until you open it, then shows it as a panel', async () => {
+    fakeViewport('phone')
+    const user = setupUser()
+    renderAt('/follow-along')
+
+    expect(screen.queryByRole('region', { name: 'Warm-up' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('listitem')).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Timeline' }))
+
+    expect(within(panel()).getByRole('region', { name: 'Warm-up' })).toBeInTheDocument()
+    expect(within(panel()).getByRole('region', { name: 'Main' })).toBeInTheDocument()
+    expect(within(panel()).getByRole('region', { name: 'Cool-down' })).toBeInTheDocument()
+    expect(panel()).toHaveTextContent('0:00 / 2:35')
+  })
+
+  it('keeps the Workout running while it is open, with the current Set moving on in it', async () => {
+    fakeViewport('phone')
+    const user = setupUser()
+    renderAt('/follow-along')
+    wait(5 + 10)
+
+    await user.click(screen.getByRole('button', { name: 'Timeline' }))
+    expect(currentRow()).toHaveTextContent('arm circle20 s')
+    expect(shownTimeLeft()).toHaveTextContent('0:10')
+
+    wait(10 + 10 + 1)
+    expect(shownTimeLeft()).toHaveTextContent('0:14')
+    expect(panel()).toHaveTextContent('0:31 / 2:35')
+    expect(currentRow()).toHaveTextContent('squat5 reps')
+    expect(within(panel()).getByText('arm circle').closest('li')).toHaveTextContent('Done:')
+  })
+
+  it('scrolls to the current Set when it opens', async () => {
+    fakeViewport('phone')
+    const scrolled: Element[] = []
+    const scrollIntoView = vi.fn(function (this: Element) {
+      scrolled.push(this)
+    })
+    Object.defineProperty(Element.prototype, 'scrollIntoView', {
+      value: scrollIntoView,
+      configurable: true,
+    })
+    const user = setupUser()
+    renderAt('/follow-along')
+    wait(5 + 20 + 10)
+
+    await user.click(screen.getByRole('button', { name: 'Timeline' }))
+
+    expect(currentRow()).toHaveTextContent('squat5 reps')
+    expect(scrolled).toEqual([currentRow()])
+    Reflect.deleteProperty(Element.prototype, 'scrollIntoView')
+  })
+
+  it('closes with its button and carries on as it was', async () => {
+    fakeViewport('phone')
+    const user = setupUser()
+    renderAt('/follow-along')
+    wait(5)
+
+    await user.click(screen.getByRole('button', { name: 'Timeline' }))
+    await user.click(within(panel()).getByRole('button', { name: 'Close' }))
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Pause' })).toBeInTheDocument()
+    wait(1)
+    expect(timeLeft()).toHaveTextContent('0:19')
+  })
+
+  it('closes when you tap outside it', async () => {
+    fakeViewport('phone')
+    const user = setupUser()
+    renderAt('/follow-along')
+
+    await user.click(screen.getByRole('button', { name: 'Timeline' }))
+    const backdrop = document.querySelector('[data-slot="sheet-overlay"]')!
+    await user.pointer({ keys: '[MouseLeft]', target: backdrop })
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Pause' })).toBeInTheDocument()
+  })
+
+  it('keeps the keys Space, N and B working while it is closed', async () => {
+    fakeViewport('phone')
+    const user = setupUser()
+    renderAt('/follow-along')
+    wait(5)
+
+    await user.click(screen.getByRole('button', { name: 'Timeline' }))
+    await user.click(within(panel()).getByRole('button', { name: 'Close' }))
+
+    await user.keyboard('n')
+    expectRest('Change-over', 'squat', '5 reps', '0:10')
+    await user.keyboard('b')
+    expect(within(nowPlaying()).getByRole('heading', { level: 1 })).toHaveTextContent('arm circle')
+    await user.keyboard(' ')
+    expect(screen.getByRole('button', { name: 'Resume' })).toBeInTheDocument()
+  })
+
+  it('follows the viewport as it changes', () => {
+    const viewport = fakeViewport('laptop')
+    renderAt('/follow-along')
+    expect(screen.getByRole('region', { name: 'Warm-up' })).toBeInTheDocument()
+
+    viewport.turn('phone')
+    expect(screen.queryByRole('region', { name: 'Warm-up' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Timeline' })).toBeInTheDocument()
+
+    viewport.turn('laptop')
+    expect(screen.getByRole('region', { name: 'Warm-up' })).toBeInTheDocument()
   })
 })

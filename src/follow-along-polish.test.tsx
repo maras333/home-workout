@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { App } from '@/App'
 import type { Exercise } from '@/library'
 import type { Workout, WorkoutSet } from '@/workout'
+import { fakeViewport } from '@/test/viewport'
 
 function exercise(id: string, name: string): Exercise {
   return {
@@ -202,6 +203,24 @@ describe('Follow-along in Polish', () => {
     expect(screen.getByText('Czas za tobą:').parentElement).toHaveTextContent(
       'Czas za tobą: 0:30 / 2:35',
     )
+  })
+
+  it('opens the Timeline as "Przebieg" on a phone, while the Workout runs on', async () => {
+    fakeViewport('phone')
+    const user = setupUser()
+    renderAt('/follow-along')
+    wait(5)
+
+    await user.click(screen.getByRole('button', { name: 'Przebieg' }))
+    const panel = screen.getByRole('dialog', { name: 'Przebieg' })
+    expect(within(panel).getByRole('region', { name: 'Rozgrzewka' })).toBeInTheDocument()
+    wait(20)
+    expect(within(panel).getByText('Zrobione:').closest('li')).toHaveTextContent('arm circle')
+    expect(panel).toHaveTextContent('Czas za tobą: 0:20 / 2:35')
+
+    await user.click(within(panel).getByRole('button', { name: 'Zamknij' }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expectRest('Zmiana', 'squat', '5 powtórzeń', '0:10')
   })
 
   it('shows the side badge on a per-side Set', () => {
