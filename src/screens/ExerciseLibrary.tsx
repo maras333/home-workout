@@ -134,7 +134,7 @@ export function ExerciseLibrary() {
                 onClick={() => setDetail(exercise)}
                 className="flex w-full min-w-0 flex-col gap-0.5 px-3 py-2 text-left break-words hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
               >
-                <span data-name className="font-medium capitalize">
+                <span data-name className="font-medium first-letter:uppercase">
                   {name}
                 </span>
                 <span className="text-sm text-muted-foreground">

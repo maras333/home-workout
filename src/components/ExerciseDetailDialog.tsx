@@ -28,7 +28,9 @@ export function ExerciseDetailDialog({
       {exercise && shown && (
         <DialogContent closeLabel={text.close} className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle className="pr-8 text-xl break-words capitalize">{shown.name}</DialogTitle>
+            <DialogTitle className="pr-8 text-xl break-words first-letter:uppercase">
+              {shown.name}
+            </DialogTitle>
             <DialogDescription>{trainsText(exercise.muscleGroups, language)}</DialogDescription>
           </DialogHeader>
           <img

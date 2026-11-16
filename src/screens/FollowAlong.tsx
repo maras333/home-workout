@@ -252,7 +252,9 @@ function TimelineRow({ set, state }: { set: WorkoutSet; state: 'done' | 'now' | 
         className="size-8 rounded bg-white"
       />
       {state === 'done' && <span className="sr-only">{text.done} </span>}
-      <span className="flex-1 capitalize">{exerciseText(set.exercise, language).name}</span>
+      <span className="flex-1 first-letter:uppercase">
+        {exerciseText(set.exercise, language).name}
+      </span>
       <span className="tabular-nums">{targetText(set, language)}</span>
     </li>
   )
@@ -359,7 +361,7 @@ function NowPlaying({
                 {step.round !== undefined &&
                   ` · ${text.round(step.round, step.rounds ?? step.round)}`}
               </p>
-              <h1 className={cn('font-bold capitalize', look.heading)}>{shownName}</h1>
+              <h1 className={cn('font-bold first-letter:uppercase', look.heading)}>{shownName}</h1>
               <p className={look.target}>{targetText(step.set, language)}</p>
               {side && (
                 <p
@@ -384,7 +386,9 @@ function NowPlaying({
                   <p className="text-muted-foreground text-sm tracking-widest uppercase">
                     {text.upNext}
                   </p>
-                  <p className={cn('font-semibold capitalize', look.upNextName)}>{shownName}</p>
+                  <p className={cn('font-semibold first-letter:uppercase', look.upNextName)}>
+                    {shownName}
+                  </p>
                   <p className={look.target}>{targetText(shown.set, language)}</p>
                 </>
               )}
