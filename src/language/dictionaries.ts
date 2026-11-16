@@ -320,7 +320,7 @@ const pl: Dictionary = {
   preview: {
     heading: 'Podgląd treningu',
     actions: 'Akcje treningu',
-    changeRequest: '← Zmień zgłoszenie',
+    changeRequest: '← Zmień wybór',
     generateAnother: 'Wygeneruj inny',
     start: 'Rozpocznij trening',
     plannedTotal: (duration, exercises) => `Planowany czas: ${duration} · ${exercises}`,

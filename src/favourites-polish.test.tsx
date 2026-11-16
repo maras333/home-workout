@@ -157,7 +157,7 @@ describe('Favourites in Polish', () => {
     renderAt('/')
     await user.click(screen.getByRole('button', { name: 'Generuj' }))
     await user.click(saveButton())
-    await user.click(screen.getByRole('button', { name: '← Zmień zgłoszenie' }))
+    await user.click(screen.getByRole('button', { name: '← Zmień wybór' }))
 
     expect(favouriteRows()[0]).toHaveTextContent('Całe ciało · 30 min · Średni · 14 lis')
 

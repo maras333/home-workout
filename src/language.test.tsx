@@ -255,7 +255,7 @@ describe('the Workout preview in Polish', () => {
     renderAt('/workout')
 
     const actions = screen.getByRole('navigation', { name: 'Akcje treningu' })
-    expect(within(actions).getByRole('button', { name: '← Zmień zgłoszenie' })).toBeInTheDocument()
+    expect(within(actions).getByRole('button', { name: '← Zmień wybór' })).toBeInTheDocument()
     expect(within(actions).getByRole('button', { name: 'Wygeneruj inny' })).toBeInTheDocument()
     expect(within(actions).getByRole('button', { name: 'Rozpocznij trening' })).toBeInTheDocument()
     const warmUp = screen.getByRole('region', { name: 'Rozgrzewka' })
