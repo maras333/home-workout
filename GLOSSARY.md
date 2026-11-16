@@ -63,6 +63,11 @@ The guided mode in which the app walks the user through a Workout in real time.
 _Avoid_: Player, training mode, coach mode
 _Polish_: Trening na żywo
 
+**Timeline**:
+The list of every Set of a Workout in Follow-along, by Block and Round, showing which are done and which is now.
+_Avoid_: Plan, schedule, playlist
+_Polish_: Przebieg
+
 **Language**:
 The language the app speaks to the user, on screen and aloud: English or Polish.
 _Avoid_: Locale, i18n, translation setting
