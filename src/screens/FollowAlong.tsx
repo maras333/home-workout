@@ -81,8 +81,8 @@ function FollowAlongSession({ workout }: { workout: Workout }) {
   if (phone) {
     // The whole screen, without the page's header and footer, so nothing scrolls: the Timeline,
     // 🔔, 🗣 and End Workout as small buttons at the top; the Exercise and a large clock in the
-    // middle, the GIF taking what height is left; Back, Pause/Resume and Skip at the bottom.
-    // It scrolls only if it must: on a phone on its side, until that has a layout of its own.
+    // middle; Back, Pause/Resume and Skip at the bottom, or under the clock on its side (see
+    // PHONE_LOOK). It scrolls only if it must, which no phone from 360 px wide should need.
     return (
       <div className="fixed inset-0 z-10 flex flex-col gap-3 overflow-y-auto bg-background pt-[env(safe-area-inset-top)]">
         <div className="flex shrink-0 flex-wrap items-center gap-2 px-4 pt-3">
@@ -258,10 +258,67 @@ function TimelineRow({ set, state }: { set: WorkoutSet; state: 'done' | 'now' | 
   )
 }
 
+/** How the current Set or rest is laid out: the class names of each part, and the key hints. */
+type Look = {
+  section: string
+  main: string
+  gif: string
+  details: string
+  heading: string
+  upNextName: string
+  target: string
+  clock: string
+  progress: string
+  controls: string
+  control: string
+  /** Shows each control's key (B, Space, N) on the button. */
+  keyHints: boolean
+}
+
+/** On a laptop, read from close by, with the keys shown on the buttons. */
+const LAPTOP_LOOK: Look = {
+  section: 'items-center gap-6',
+  main: 'w-full max-w-3xl gap-8 md:flex-row',
+  gif: 'size-72',
+  details: 'flex-1 gap-3',
+  heading: 'text-4xl',
+  upNextName: 'text-2xl',
+  target: 'text-xl',
+  clock: 'text-7xl',
+  progress: 'w-full max-w-3xl',
+  controls: 'flex items-center gap-3',
+  control: 'h-12 min-w-28 px-5 text-base',
+  keyHints: true,
+}
+
 /**
- * The current Set or rest with its clock and controls. On a phone everything is sized to be read
- * from about two metres, the GIF gives way to the text, and the controls are a bar at the bottom.
+ * On a phone everything is sized to be read from about two metres. Upright, the GIF takes the
+ * height the text and the clock leave over, and the controls are a bar along the bottom. On its
+ * side (`landscape:`), the GIF is on the left and the text, clock and controls on the right.
  */
+const PHONE_LOOK: Look = {
+  section:
+    'min-h-0 gap-3 landscape:grid landscape:grid-cols-[minmax(0,42%)_1fr] landscape:grid-rows-[1fr_auto_auto] landscape:gap-x-4 landscape:gap-y-2 landscape:px-4 landscape:pb-3',
+  // Upright, a column of its own; on its side, its children join the section's grid.
+  main: 'min-h-0 flex-1 gap-3 px-4 landscape:contents',
+  gif: 'min-h-0 w-full flex-1 object-contain landscape:row-span-3 landscape:h-full',
+  details: 'w-full shrink-0 gap-1 landscape:min-h-0 landscape:justify-center landscape:gap-0.5',
+  heading: 'text-2xl break-words landscape:text-xl',
+  upNextName: 'text-xl break-words landscape:text-lg',
+  target: 'text-2xl landscape:text-lg',
+  // About 100 px tall on an upright 360 px phone, 80 px on its side: readable from two metres.
+  clock:
+    'text-center text-[min(28vw,14dvh)] leading-none landscape:text-left landscape:text-[min(12vw,22dvh)]',
+  progress: 'mx-4 landscape:mx-0',
+  controls:
+    'grid shrink-0 grid-cols-3 gap-2 border-t p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] landscape:border-t-0 landscape:p-0',
+  // At least 44 px tall.
+  control: 'h-14 min-w-0 text-lg landscape:h-12',
+  // No keyboard to press.
+  keyHints: false,
+}
+
+/** The current Set or rest with its clock and controls. */
 function NowPlaying({
   player,
   upNext,
@@ -275,6 +332,7 @@ function NowPlaying({
   const text = useText().followAlong
   const step = player.step
   if (!step) return null
+  const look = phone ? PHONE_LOOK : LAPTOP_LOOK
   const isWork = step.kind === 'work'
   const shown = isWork ? step : upNext
   const shownName = shown && exerciseText(shown.set.exercise, language).name
@@ -282,30 +340,18 @@ function NowPlaying({
   const side = isWork ? sideAt(step, player.elapsed) : null
 
   return (
-    <section
-      aria-label={text.now}
-      className={cn('flex flex-1 flex-col', phone ? 'min-h-0 gap-3' : 'items-center gap-6')}
-    >
-      <div
-        className={cn(
-          'flex flex-col items-center',
-          phone ? 'min-h-0 flex-1 gap-3 px-4' : 'w-full max-w-3xl gap-8 md:flex-row',
-        )}
-      >
+    <section aria-label={text.now} className={cn('flex flex-1 flex-col', look.section)}>
+      <div className={cn('flex flex-col items-center', look.main)}>
         {shown && (
           <img
             src={shown.set.exercise.gifUrl}
             alt={shownName ?? ''}
             width={288}
             height={288}
-            className={cn(
-              'rounded-2xl bg-white',
-              // The height the name and the clock leave over, as wide as the screen.
-              phone ? 'min-h-0 w-full flex-1 object-contain' : 'size-72',
-            )}
+            className={cn('rounded-2xl bg-white', look.gif)}
           />
         )}
-        <div className={cn('flex flex-col', phone ? 'w-full shrink-0 gap-1' : 'flex-1 gap-3')}>
+        <div className={cn('flex flex-col', look.details)}>
           {isWork ? (
             <>
               <p className="text-muted-foreground text-sm tracking-widest uppercase">
@@ -313,12 +359,8 @@ function NowPlaying({
                 {step.round !== undefined &&
                   ` · ${text.round(step.round, step.rounds ?? step.round)}`}
               </p>
-              <h1
-                className={cn('font-bold capitalize', phone ? 'text-2xl break-words' : 'text-4xl')}
-              >
-                {shownName}
-              </h1>
-              <p className={phone ? 'text-2xl' : 'text-xl'}>{targetText(step.set, language)}</p>
+              <h1 className={cn('font-bold capitalize', look.heading)}>{shownName}</h1>
+              <p className={look.target}>{targetText(step.set, language)}</p>
               {side && (
                 <p
                   className={cn(
@@ -334,7 +376,7 @@ function NowPlaying({
             </>
           ) : (
             <>
-              <h1 className={cn('font-bold', phone ? 'text-2xl' : 'text-4xl')}>
+              <h1 className={cn('font-bold', look.heading)}>
                 {step.kind === 'ready' ? text.getReady : text.rests[step.label]}
               </h1>
               {shown && (
@@ -342,17 +384,8 @@ function NowPlaying({
                   <p className="text-muted-foreground text-sm tracking-widest uppercase">
                     {text.upNext}
                   </p>
-                  <p
-                    className={cn(
-                      'font-semibold capitalize',
-                      phone ? 'text-xl break-words' : 'text-2xl',
-                    )}
-                  >
-                    {shownName}
-                  </p>
-                  <p className={phone ? 'text-2xl' : 'text-xl'}>
-                    {targetText(shown.set, language)}
-                  </p>
+                  <p className={cn('font-semibold capitalize', look.upNextName)}>{shownName}</p>
+                  <p className={look.target}>{targetText(shown.set, language)}</p>
                 </>
               )}
             </>
@@ -360,11 +393,7 @@ function NowPlaying({
           <p
             role="timer"
             aria-label={text.timeLeft}
-            className={cn(
-              'font-mono font-bold tabular-nums',
-              // About 100 px tall on a 360 px phone: readable from two metres.
-              phone ? 'text-center text-[min(28vw,14dvh)] leading-none' : 'text-7xl',
-            )}
+            className={cn('font-mono font-bold tabular-nums', look.clock)}
           >
             {clockText(player.remaining)}
           </p>
@@ -376,81 +405,69 @@ function NowPlaying({
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={progress}
-        className={cn(
-          'bg-muted h-3 shrink-0 overflow-hidden rounded-full',
-          phone ? 'mx-4' : 'w-full max-w-3xl',
-        )}
+        className={cn('bg-muted h-3 shrink-0 overflow-hidden rounded-full', look.progress)}
       >
         <div
           className={cn('h-full transition-[width]', isWork ? 'bg-primary' : 'bg-sky-500')}
           style={{ width: `${progress}%` }}
         />
       </div>
-      <Controls player={player} phone={phone} />
+      <Controls player={player} look={look} />
     </section>
   )
 }
 
-/** Back, Pause/Resume and Skip; on a phone, large, in a bar along the bottom of the screen. */
-function Controls({ player, phone }: { player: Player; phone: boolean }) {
+/** Back, Pause/Resume and Skip. */
+function Controls({ player, look }: { player: Player; look: Look }) {
   const text = useText().followAlong
   return (
-    <div
-      role="group"
-      aria-label={text.controls}
-      className={cn(
-        phone
-          ? 'grid shrink-0 grid-cols-3 gap-2 border-t p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]'
-          : 'flex items-center gap-3',
-      )}
-    >
+    <div role="group" aria-label={text.controls} className={look.controls}>
       <ControlButton
+        look={look}
         label={text.back}
         shortcut="B"
         onClick={player.back}
         variant="outline"
-        phone={phone}
       />
       <ControlButton
+        look={look}
         label={player.paused ? text.resume : text.pause}
         shortcut="Space"
         onClick={player.togglePause}
-        phone={phone}
       />
       <ControlButton
+        look={look}
         label={text.skip}
         shortcut="N"
         onClick={player.skip}
         variant="outline"
-        phone={phone}
       />
     </div>
   )
 }
 
 function ControlButton({
+  look,
   label,
   shortcut,
   onClick,
   variant = 'default',
-  phone,
 }: {
+  look: Look
   label: string
   shortcut: string
   onClick: () => void
   variant?: 'default' | 'outline'
-  phone: boolean
 }) {
   return (
     <Button
       variant={variant}
       onClick={onClick}
       aria-keyshortcuts={shortcut === 'Space' ? 'Space' : shortcut.toLowerCase()}
-      // At least 44 px tall on a phone; no key hints there, where there is no keyboard to press.
-      className={phone ? 'h-14 min-w-0 text-lg' : 'h-12 min-w-28 px-5 text-base'}
+      className={look.control}
     >
       {label}
-      {!phone && (
+      {look.keyHints && (
         <kbd aria-hidden="true" className="text-xs opacity-60">
           {shortcut}
         </kbd>

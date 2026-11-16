@@ -1010,6 +1010,28 @@ describe('Follow-along on a phone', () => {
     expect(screen.getByRole('dialog', { name: 'End this Workout?' })).toBeInTheDocument()
   })
 
+  // Upright and on its side differ only in CSS, which jsdom doesn't compute; switching between
+  // the phone and laptop layouts is the turn that changes what renders.
+  it('keeps the countdown, the position and the progress when the layout switches mid-Workout', () => {
+    const viewport = fakeViewport('phone')
+    renderAt('/follow-along')
+    wait(5 + 20 + 10 + 5) // 5 s into the first squat
+    const progress = () => screen.getByRole('progressbar', { name: 'Set progress' })
+    expect(timeLeft()).toHaveTextContent('0:10')
+    expect(progress()).toHaveAttribute('aria-valuenow', '33')
+
+    viewport.turn('laptop')
+    expectSet('squat', '5 reps', '0:10')
+    expect(progress()).toHaveAttribute('aria-valuenow', '33')
+    expect(screen.getByText('0:35 / 2:35')).toBeInTheDocument()
+    wait(1)
+
+    viewport.turn('phone')
+    expect(within(nowPlaying()).getByRole('heading', { level: 1 })).toHaveTextContent('squat')
+    expect(timeLeft()).toHaveTextContent('0:09')
+    expect(progress()).toHaveAttribute('aria-valuenow', '40')
+  })
+
   it('follows the viewport as it changes', () => {
     const viewport = fakeViewport('laptop')
     renderAt('/follow-along')
