@@ -78,19 +78,32 @@ function FollowAlongSession({ workout }: { workout: Workout }) {
 
   if (player.finished) return <WorkoutComplete workout={workout} total={total} />
 
+  if (phone) {
+    // The whole screen, without the page's header and footer, so nothing scrolls: the Timeline,
+    // 🔔, 🗣 and End Workout as small buttons at the top; the Exercise and a large clock in the
+    // middle, the GIF taking what height is left; Back, Pause/Resume and Skip at the bottom.
+    // It scrolls only if it must: on a phone on its side, until that has a layout of its own.
+    return (
+      <div className="fixed inset-0 z-10 flex flex-col gap-3 overflow-y-auto bg-background pt-[env(safe-area-inset-top)]">
+        <div className="flex shrink-0 flex-wrap items-center gap-2 px-4 pt-3">
+          <TimelinePanel steps={steps} player={player} total={total} />
+          <SoundToggles settings={sound} onChange={setSound} speaker={speaker} phone />
+          <EndWorkout open={ending !== null} onOpenChange={askToEnd} className="self-center" />
+        </div>
+        <NowPlaying player={player} upNext={upNext} phone />
+      </div>
+    )
+  }
+
   return (
     <div className="flex flex-col gap-4 p-6">
-      <SoundToggles settings={sound} onChange={setSound} speaker={speaker} />
+      <SoundToggles settings={sound} onChange={setSound} speaker={speaker} phone={false} />
       <div className="flex flex-col gap-8 lg:flex-row lg:items-start">
         <aside className="flex w-full shrink-0 flex-col gap-6 lg:w-80">
-          {phone ? (
-            <TimelinePanel steps={steps} player={player} total={total} />
-          ) : (
-            <Timeline steps={steps} player={player} total={total} />
-          )}
+          <Timeline steps={steps} player={player} total={total} />
           <EndWorkout open={ending !== null} onOpenChange={askToEnd} />
         </aside>
-        <NowPlaying player={player} upNext={upNext} />
+        <NowPlaying player={player} upNext={upNext} phone={false} />
       </div>
     </div>
   )
@@ -160,7 +173,7 @@ function TimelinePanel({
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="outline" className="self-start">
+        <Button variant="outline" className="mr-auto">
           {text.timeline}
         </Button>
       </SheetTrigger>
@@ -245,7 +258,19 @@ function TimelineRow({ set, state }: { set: WorkoutSet; state: 'done' | 'now' | 
   )
 }
 
-function NowPlaying({ player, upNext }: { player: Player; upNext: WorkStep | null }) {
+/**
+ * The current Set or rest with its clock and controls. On a phone everything is sized to be read
+ * from about two metres, the GIF gives way to the text, and the controls are a bar at the bottom.
+ */
+function NowPlaying({
+  player,
+  upNext,
+  phone,
+}: {
+  player: Player
+  upNext: WorkStep | null
+  phone: boolean
+}) {
   const { language } = useLanguage()
   const text = useText().followAlong
   const step = player.step
@@ -257,18 +282,30 @@ function NowPlaying({ player, upNext }: { player: Player; upNext: WorkStep | nul
   const side = isWork ? sideAt(step, player.elapsed) : null
 
   return (
-    <section aria-label={text.now} className="flex flex-1 flex-col items-center gap-6">
-      <div className="flex w-full max-w-3xl flex-col items-center gap-8 md:flex-row">
+    <section
+      aria-label={text.now}
+      className={cn('flex flex-1 flex-col', phone ? 'min-h-0 gap-3' : 'items-center gap-6')}
+    >
+      <div
+        className={cn(
+          'flex flex-col items-center',
+          phone ? 'min-h-0 flex-1 gap-3 px-4' : 'w-full max-w-3xl gap-8 md:flex-row',
+        )}
+      >
         {shown && (
           <img
             src={shown.set.exercise.gifUrl}
             alt={shownName ?? ''}
             width={288}
             height={288}
-            className="size-72 rounded-2xl bg-white"
+            className={cn(
+              'rounded-2xl bg-white',
+              // The height the name and the clock leave over, as wide as the screen.
+              phone ? 'min-h-0 w-full flex-1 object-contain' : 'size-72',
+            )}
           />
         )}
-        <div className="flex flex-1 flex-col gap-3">
+        <div className={cn('flex flex-col', phone ? 'w-full shrink-0 gap-1' : 'flex-1 gap-3')}>
           {isWork ? (
             <>
               <p className="text-muted-foreground text-sm tracking-widest uppercase">
@@ -276,8 +313,12 @@ function NowPlaying({ player, upNext }: { player: Player; upNext: WorkStep | nul
                 {step.round !== undefined &&
                   ` · ${text.round(step.round, step.rounds ?? step.round)}`}
               </p>
-              <h1 className="text-4xl font-bold capitalize">{shownName}</h1>
-              <p className="text-xl">{targetText(step.set, language)}</p>
+              <h1
+                className={cn('font-bold capitalize', phone ? 'text-2xl break-words' : 'text-4xl')}
+              >
+                {shownName}
+              </h1>
+              <p className={phone ? 'text-2xl' : 'text-xl'}>{targetText(step.set, language)}</p>
               {side && (
                 <p
                   className={cn(
@@ -293,7 +334,7 @@ function NowPlaying({ player, upNext }: { player: Player; upNext: WorkStep | nul
             </>
           ) : (
             <>
-              <h1 className="text-4xl font-bold">
+              <h1 className={cn('font-bold', phone ? 'text-2xl' : 'text-4xl')}>
                 {step.kind === 'ready' ? text.getReady : text.rests[step.label]}
               </h1>
               {shown && (
@@ -301,8 +342,17 @@ function NowPlaying({ player, upNext }: { player: Player; upNext: WorkStep | nul
                   <p className="text-muted-foreground text-sm tracking-widest uppercase">
                     {text.upNext}
                   </p>
-                  <p className="text-2xl font-semibold capitalize">{shownName}</p>
-                  <p className="text-xl">{targetText(shown.set, language)}</p>
+                  <p
+                    className={cn(
+                      'font-semibold capitalize',
+                      phone ? 'text-xl break-words' : 'text-2xl',
+                    )}
+                  >
+                    {shownName}
+                  </p>
+                  <p className={phone ? 'text-2xl' : 'text-xl'}>
+                    {targetText(shown.set, language)}
+                  </p>
                 </>
               )}
             </>
@@ -310,7 +360,11 @@ function NowPlaying({ player, upNext }: { player: Player; upNext: WorkStep | nul
           <p
             role="timer"
             aria-label={text.timeLeft}
-            className="font-mono text-7xl font-bold tabular-nums"
+            className={cn(
+              'font-mono font-bold tabular-nums',
+              // About 100 px tall on a 360 px phone: readable from two metres.
+              phone ? 'text-center text-[min(28vw,14dvh)] leading-none' : 'text-7xl',
+            )}
           >
             {clockText(player.remaining)}
           </p>
@@ -322,29 +376,54 @@ function NowPlaying({ player, upNext }: { player: Player; upNext: WorkStep | nul
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={progress}
-        className="bg-muted h-3 w-full max-w-3xl overflow-hidden rounded-full"
+        className={cn(
+          'bg-muted h-3 shrink-0 overflow-hidden rounded-full',
+          phone ? 'mx-4' : 'w-full max-w-3xl',
+        )}
       >
         <div
           className={cn('h-full transition-[width]', isWork ? 'bg-primary' : 'bg-sky-500')}
           style={{ width: `${progress}%` }}
         />
       </div>
-      <Controls player={player} />
+      <Controls player={player} phone={phone} />
     </section>
   )
 }
 
-function Controls({ player }: { player: Player }) {
+/** Back, Pause/Resume and Skip; on a phone, large, in a bar along the bottom of the screen. */
+function Controls({ player, phone }: { player: Player; phone: boolean }) {
   const text = useText().followAlong
   return (
-    <div className="flex items-center gap-3">
-      <ControlButton label={text.back} shortcut="B" onClick={player.back} variant="outline" />
+    <div
+      role="group"
+      aria-label={text.controls}
+      className={cn(
+        phone
+          ? 'grid shrink-0 grid-cols-3 gap-2 border-t p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]'
+          : 'flex items-center gap-3',
+      )}
+    >
+      <ControlButton
+        label={text.back}
+        shortcut="B"
+        onClick={player.back}
+        variant="outline"
+        phone={phone}
+      />
       <ControlButton
         label={player.paused ? text.resume : text.pause}
         shortcut="Space"
         onClick={player.togglePause}
+        phone={phone}
       />
-      <ControlButton label={text.skip} shortcut="N" onClick={player.skip} variant="outline" />
+      <ControlButton
+        label={text.skip}
+        shortcut="N"
+        onClick={player.skip}
+        variant="outline"
+        phone={phone}
+      />
     </div>
   )
 }
@@ -354,23 +433,28 @@ function ControlButton({
   shortcut,
   onClick,
   variant = 'default',
+  phone,
 }: {
   label: string
   shortcut: string
   onClick: () => void
   variant?: 'default' | 'outline'
+  phone: boolean
 }) {
   return (
     <Button
       variant={variant}
       onClick={onClick}
       aria-keyshortcuts={shortcut === 'Space' ? 'Space' : shortcut.toLowerCase()}
-      className="h-12 min-w-28 px-5 text-base"
+      // At least 44 px tall on a phone; no key hints there, where there is no keyboard to press.
+      className={phone ? 'h-14 min-w-0 text-lg' : 'h-12 min-w-28 px-5 text-base'}
     >
       {label}
-      <kbd aria-hidden="true" className="text-xs opacity-60">
-        {shortcut}
-      </kbd>
+      {!phone && (
+        <kbd aria-hidden="true" className="text-xs opacity-60">
+          {shortcut}
+        </kbd>
+      )}
     </Button>
   )
 }
@@ -379,9 +463,11 @@ function ControlButton({
 function EndWorkout({
   open,
   onOpenChange,
+  className,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
+  className?: string
 }) {
   const navigate = useNavigate()
   const text = useText().followAlong
@@ -391,7 +477,11 @@ function EndWorkout({
   }
   return (
     <>
-      <Button variant="destructive" className="self-start" onClick={() => onOpenChange(true)}>
+      <Button
+        variant="destructive"
+        className={cn('self-start', className)}
+        onClick={() => onOpenChange(true)}
+      >
         {text.endWorkout}
       </Button>
       <Dialog open={open} onOpenChange={onOpenChange}>
@@ -418,14 +508,18 @@ function SoundToggles({
   settings,
   onChange,
   speaker,
+  phone,
 }: {
   settings: SoundSettings
   onChange: (settings: SoundSettings) => void
   speaker: Speaker
+  phone: boolean
 }) {
   const { followAlong: text, speech } = useText()
   return (
-    <div className="flex items-center justify-end gap-2">
+    // On a phone the toggles join the row of small buttons at the top, and the "no Polish
+    // voice" hint takes a line of its own under that row rather than squeezing it.
+    <div className={phone ? 'contents' : 'flex items-center justify-end gap-2'}>
       <SoundToggle
         label={text.beeps}
         icon="🔔"
@@ -439,7 +533,16 @@ function SoundToggles({
         disabled={speaker.voiceMissing}
         onToggle={() => onChange({ ...settings, voice: !settings.voice })}
       />
-      {speaker.voiceMissing && <p className="text-muted-foreground text-sm">{speech.noVoice}</p>}
+      {speaker.voiceMissing && (
+        <p
+          className={cn(
+            'text-muted-foreground',
+            phone ? 'order-last basis-full text-right text-xs' : 'text-sm',
+          )}
+        >
+          {speech.noVoice}
+        </p>
+      )}
     </div>
   )
 }

@@ -223,6 +223,20 @@ describe('Follow-along in Polish', () => {
     expectRest('Zmiana', 'squat', '5 powtórzeń', '0:10')
   })
 
+  it('puts Wstecz, Pauza and Pomiń in the "Sterowanie" bar on a phone', async () => {
+    fakeViewport('phone')
+    const user = setupUser()
+    renderAt('/follow-along')
+    wait(5)
+
+    const bar = screen.getByRole('group', { name: 'Sterowanie' })
+    await user.click(within(bar).getByRole('button', { name: 'Pomiń' }))
+    expectRest('Zmiana', 'squat', '5 powtórzeń', '0:10')
+    await user.click(within(bar).getByRole('button', { name: 'Pauza' }))
+    expect(within(bar).getByRole('button', { name: 'Wznów' })).toBeInTheDocument()
+    expect(within(bar).getByRole('button', { name: 'Wstecz' })).toBeInTheDocument()
+  })
+
   it('shows the side badge on a per-side Set', () => {
     renderAt('/follow-along')
     wait(5 + 20 + 10 + 15 + 15)

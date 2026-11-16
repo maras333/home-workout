@@ -72,6 +72,8 @@ export type Dictionary = {
     timeline: string
     /** Closes the Timeline's panel on a phone. */
     closeTimeline: string
+    /** The group of Back, Pause/Resume and Skip. */
+    controls: string
     back: string
     pause: string
     resume: string
@@ -228,6 +230,7 @@ const en: Dictionary = {
     done: 'Done:',
     timeline: 'Timeline',
     closeTimeline: 'Close',
+    controls: 'Controls',
     back: 'Back',
     pause: 'Pause',
     resume: 'Resume',
@@ -362,6 +365,7 @@ const pl: Dictionary = {
     done: 'Zrobione:',
     timeline: 'Przebieg',
     closeTimeline: 'Zamknij',
+    controls: 'Sterowanie',
     back: 'Wstecz',
     pause: 'Pauza',
     resume: 'Wznów',

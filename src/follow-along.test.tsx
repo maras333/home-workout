@@ -981,6 +981,35 @@ describe('Follow-along on a phone', () => {
     expect(screen.getByRole('button', { name: 'Resume' })).toBeInTheDocument()
   })
 
+  it('puts Back, Pause and Skip in a bar of their own, and they work from it', async () => {
+    fakeViewport('phone')
+    const user = setupUser()
+    renderAt('/follow-along')
+    wait(7)
+    const bar = screen.getByRole('group', { name: 'Controls' })
+
+    await user.click(within(bar).getByRole('button', { name: 'Pause' }))
+    wait(10)
+    expect(timeLeft()).toHaveTextContent('0:18')
+    await user.click(within(bar).getByRole('button', { name: 'Resume' }))
+
+    await user.click(within(bar).getByRole('button', { name: 'Skip' }))
+    expectRest('Change-over', 'squat', '5 reps', '0:10')
+    await user.click(within(bar).getByRole('button', { name: 'Back' }))
+    expect(within(nowPlaying()).getByRole('heading', { level: 1 })).toHaveTextContent('arm circle')
+    expect(timeLeft()).toHaveTextContent('0:20')
+  })
+
+  it('still offers End Workout, which asks first', async () => {
+    fakeViewport('phone')
+    const user = setupUser()
+    renderAt('/follow-along')
+
+    await user.click(screen.getByRole('button', { name: 'End Workout' }))
+
+    expect(screen.getByRole('dialog', { name: 'End this Workout?' })).toBeInTheDocument()
+  })
+
   it('follows the viewport as it changes', () => {
     const viewport = fakeViewport('laptop')
     renderAt('/follow-along')
