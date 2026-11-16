@@ -309,7 +309,7 @@ const pl: Dictionary = {
     perSide: (amount) => `${amount} na stronę`,
   },
   request: {
-    heading: 'Czego chcesz?',
+    heading: 'Jaki trening chcesz wykonać?',
     workoutType: 'Rodzaj treningu',
     time: 'Czas',
     difficulty: 'Poziom',

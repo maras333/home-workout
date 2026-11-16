@@ -21,7 +21,7 @@ _Polish_: Sprzęt
 **Workout Request**:
 What the user asks for: workout type, total time, Difficulty and the Equipment they have today.
 _Avoid_: Preferences, settings, query
-_Polish_: "Czego chcesz?" (the form's heading)
+_Polish_: "Jaki trening chcesz wykonać?" (the form's heading)
 
 **Difficulty**:
 How hard the user wants the Workout to be: Beginner, Intermediate or Advanced.

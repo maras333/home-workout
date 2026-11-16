@@ -34,7 +34,7 @@ The Workouts themselves don't change: a saved Workout or Favourite is the same W
 
 8. As a Polish-speaking user, I want every label, button, heading, hint and dialog in Polish, so that nothing on screen is in English.
 9. As a Polish-speaking user, I want the domain terms to use one Polish word each (Trening, Ćwiczenie, Rozgrzewka / Część główna / Wyciszenie, Runda, Seria, Sprzęt, Poziom, Ulubione, Zamień, Trening na żywo), so that the app is consistent.
-10. As a Polish-speaking user, I want the Workout Request form headed "Czego chcesz?", with Polish workout types (Całe ciało, Góra ciała, Dół ciała, Brzuch, Cardio/HIIT, Mobilność i rozciąganie), so that I understand my choices.
+10. As a Polish-speaking user, I want the Workout Request form headed "Jaki trening chcesz wykonać?", with Polish workout types (Całe ciało, Góra ciała, Dół ciała, Brzuch, Cardio/HIIT, Mobilność i rozciąganie), so that I understand my choices.
 11. As a Polish-speaking user, I want the Difficulty options and their hints in Polish (Początkujący, Średni, Zaawansowany), so that I can pick the right one.
 12. As a Polish-speaking user, I want the Equipment options in Polish (hantle, guma oporowa, kettlebell, krzesło lub ławka), so that I know what to tick.
 13. As a Polish-speaking user, I want counts with correct Polish plural forms ("1 powtórzenie", "3 powtórzenia", "12 powtórzeń", "1 runda", "3 rundy", "5 rund", "5 Ćwiczeń × 4 Rundy"), so that the text reads naturally.

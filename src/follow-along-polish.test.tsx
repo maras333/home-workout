@@ -265,7 +265,9 @@ describe('Follow-along in Polish', () => {
     await user.click(
       within(screen.getByRole('dialog')).getByRole('button', { name: 'Zakończ trening' }),
     )
-    expect(screen.getByRole('heading', { level: 1, name: 'Czego chcesz?' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Jaki trening chcesz wykonać?' }),
+    ).toBeInTheDocument()
   })
 
   it('shows "Trening zakończony" at the end', () => {

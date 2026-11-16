@@ -81,7 +81,9 @@ describe('the default Language', () => {
     browserLanguages('pl-PL', 'en-US')
     renderAt('/')
 
-    expect(screen.getByRole('heading', { level: 1, name: 'Czego chcesz?' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Jaki trening chcesz wykonać?' }),
+    ).toBeInTheDocument()
     expect(document.documentElement).toHaveAttribute('lang', 'pl')
   })
 
@@ -103,7 +105,9 @@ describe('a saved Language', () => {
     localStorage.setItem(LANGUAGE_KEY, saved)
     renderAt('/')
 
-    expect(screen.getByRole('heading', { level: 1, name: 'Czego chcesz?' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Jaki trening chcesz wykonać?' }),
+    ).toBeInTheDocument()
   })
 })
 
@@ -126,7 +130,9 @@ describe('the Language switch', () => {
 
     await user.click(within(header).getByRole('button', { name: 'PL' }))
 
-    expect(screen.getByRole('heading', { level: 1, name: 'Czego chcesz?' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Jaki trening chcesz wykonać?' }),
+    ).toBeInTheDocument()
     expect(within(header).getByRole('button', { name: 'PL' })).toHaveAttribute(
       'aria-pressed',
       'true',
