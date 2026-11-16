@@ -45,7 +45,7 @@ export function FavouritesSection() {
               key={favourite.id}
               className={cn('flex items-center gap-3 p-3', !available && 'text-muted-foreground')}
             >
-              <div className="flex flex-1 flex-col">
+              <div className="flex min-w-0 flex-1 flex-col break-words">
                 <span className="font-medium">{favouriteLabel(favourite, language)}</span>
                 <span className="text-sm">
                   {counts.exercises(exerciseCount(favourite.workout))}
@@ -64,7 +64,9 @@ export function FavouritesSection() {
         <DialogContent showCloseButton={false}>
           <DialogHeader>
             <DialogTitle>{text.deleteTitle}</DialogTitle>
-            <DialogDescription>{deleting && favouriteLabel(deleting, language)}</DialogDescription>
+            <DialogDescription className="break-words">
+              {deleting && favouriteLabel(deleting, language)}
+            </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <DialogClose asChild>
