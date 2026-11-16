@@ -8,7 +8,8 @@ import { WorkoutRequestForm } from '@/screens/WorkoutRequestForm'
 
 function Layout() {
   return (
-    <div className="flex min-h-svh flex-col">
+    // Below the sm breakpoint, leave room at the bottom for a bar fixed to the screen.
+    <div className="flex min-h-svh flex-col max-sm:has-data-bottom-bar:pb-[calc(6rem+env(safe-area-inset-bottom))]">
       <header className="flex justify-end px-4 py-3">
         <LanguageSwitch />
       </header>

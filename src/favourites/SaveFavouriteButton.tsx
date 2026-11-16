@@ -14,7 +14,7 @@ export function SaveFavouriteButton({ workout }: { workout: Workout }) {
   const blocked = full && !saved
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex min-w-0 flex-wrap items-center gap-2">
       {blocked && (
         <p id={hintId} className="text-muted-foreground text-sm">
           {text.full}
