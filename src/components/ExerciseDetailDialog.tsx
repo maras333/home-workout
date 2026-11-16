@@ -26,12 +26,9 @@ export function ExerciseDetailDialog({
   return (
     <Dialog open={exercise !== null} onOpenChange={(open) => !open && onClose()}>
       {exercise && shown && (
-        <DialogContent
-          closeLabel={text.close}
-          className="max-h-[calc(100svh-2rem)] overflow-y-auto sm:max-w-lg"
-        >
+        <DialogContent closeLabel={text.close} className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle className="pr-8 text-xl capitalize">{shown.name}</DialogTitle>
+            <DialogTitle className="pr-8 text-xl break-words capitalize">{shown.name}</DialogTitle>
             <DialogDescription>{trainsText(exercise.muscleGroups, language)}</DialogDescription>
           </DialogHeader>
           <img
