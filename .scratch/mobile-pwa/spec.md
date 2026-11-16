@@ -58,6 +58,7 @@ The app can be installed from the browser as a PWA: it opens from the home scree
   - The keys (Space, N, B) keep working.
   - The Timeline is a panel sliding up from the bottom (a dialog), opened by a "Timeline" / "Przebieg" button and closed by a button or the backdrop. It does not pause the Workout, unlike End Workout. It shows the same content as the laptop Timeline, scrolled to the current Set.
   - The screen Wake Lock stays as it is.
+  - Follow-along takes the whole screen, covering the page's header and footer, so the "EN | PL" switch is hidden during a Workout on a phone; the Language is chosen before starting.
 - **Workout preview on a phone:** Start Workout is a full-width button fixed to the bottom of the screen; the list leaves room for it. Change request, Generate another and Save stay at the top and wrap.
 - **Workout Request form on a phone:** same order; workout types in two columns, Time in four, Difficulty in one; less padding. Nothing is fixed to the screen.
 - **Dialogs** fit the screen with a margin and scroll inside.
