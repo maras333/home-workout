@@ -64,8 +64,12 @@ function BlockSection({
                   height={56}
                   className="size-14 shrink-0 rounded"
                 />
-                <span className="min-w-0 flex-1 break-words capitalize">{name}</span>
-                <span className="text-muted-foreground">{targetText(set, language)}</span>
+                {/* On a phone the target goes under the name: beside it, a long Polish
+                    target ("12 powtórzeń na stronę") left the name almost no width. */}
+                <span className="flex min-w-0 flex-1 flex-col sm:flex-row sm:items-center sm:gap-4">
+                  <span className="break-words capitalize sm:flex-1">{name}</span>
+                  <span className="text-muted-foreground">{targetText(set, language)}</span>
+                </span>
               </button>
               <Button
                 variant="outline"
