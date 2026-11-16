@@ -205,15 +205,14 @@ describe('in Polish', () => {
     renderAt('/')
 
     const footer = screen.getByRole('contentinfo')
-    expect(footer).toHaveTextContent('Dane ćwiczeń i GIF-y: ExerciseDB (AGPL-3.0) · Kod źródłowy')
-    expect(within(footer).getByRole('link', { name: 'ExerciseDB (AGPL-3.0)' })).toHaveAttribute(
+    expect(footer).toHaveTextContent('Dane ćwiczeń i GIF-y: ExerciseDB · AGPL-3.0')
+    expect(within(footer).getByRole('link', { name: 'ExerciseDB' })).toHaveAttribute(
       'href',
       'https://github.com/bootstrapping-lab/exercisedb-api/tree/7cdc82e',
     )
-    expect(within(footer).getByRole('link', { name: 'Kod źródłowy' })).toHaveAttribute(
-      'href',
-      'https://github.com/maras333/home-workout',
-    )
+    const source = within(footer).getByRole('link', { name: 'AGPL-3.0' })
+    expect(source).toHaveAttribute('href', 'https://github.com/maras333/home-workout')
+    expect(source).toHaveAccessibleDescription('Kod źródłowy')
   })
 })
 

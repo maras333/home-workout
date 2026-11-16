@@ -19,15 +19,14 @@ describe('app shell', () => {
     expect(screen.getByRole('heading', { level: 1, name: 'Workout Request' })).toBeInTheDocument()
 
     const footer = screen.getByRole('contentinfo')
-    expect(footer).toHaveTextContent('Exercise data & GIFs: ExerciseDB (AGPL-3.0) · Source code')
-    expect(within(footer).getByRole('link', { name: 'ExerciseDB (AGPL-3.0)' })).toHaveAttribute(
+    expect(footer).toHaveTextContent('Exercise data & GIFs: ExerciseDB · AGPL-3.0')
+    expect(within(footer).getByRole('link', { name: 'ExerciseDB' })).toHaveAttribute(
       'href',
       'https://github.com/bootstrapping-lab/exercisedb-api/tree/7cdc82e',
     )
-    expect(within(footer).getByRole('link', { name: 'Source code' })).toHaveAttribute(
-      'href',
-      'https://github.com/maras333/home-workout',
-    )
+    const source = within(footer).getByRole('link', { name: 'AGPL-3.0' })
+    expect(source).toHaveAttribute('href', 'https://github.com/maras333/home-workout')
+    expect(source).toHaveAccessibleDescription('Source code')
   })
 
   it('sends unknown routes to the Workout Request form', () => {

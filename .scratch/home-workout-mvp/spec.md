@@ -114,7 +114,7 @@ Exercise data and GIFs come from the open ExerciseDB v1 dataset (AGPL-3.0), cred
 
 ### Credits and source
 
-78. As a user, I want a small footer on every screen reading "Exercise data & GIFs: ExerciseDB (AGPL-3.0) · Source code", with links to the dataset and to this repo, so that credit and source are always one click away.
+78. As a user, I want a small footer on every screen reading "Exercise data & GIFs: ExerciseDB · AGPL-3.0", with links to the dataset and (on the licence name, titled "Source code") to this repo, so that credit and source are always one click away.
 79. As the author, I want the repo public on GitHub under AGPL-3.0, so that the app meets its licence for anyone who uses the deployment.
 
 ### Exercise library (author)
@@ -217,7 +217,7 @@ Exercise data and GIFs come from the open ExerciseDB v1 dataset (AGPL-3.0), cred
   - **Corner:** the 🔔 and 🗣 toggles.
   - A "Start Workout" click begins the session (which also unlocks browser audio) with a 5-second "Get ready" countdown showing the first Exercise as "up next".
 - **Workout complete:** a completion message and ☆ Save.
-- **Footer** on every screen: "Exercise data & GIFs: ExerciseDB (AGPL-3.0) · Source code", linking to the pinned dataset commit and to this repo.
+- **Footer** on every screen: "Exercise data & GIFs: ExerciseDB · AGPL-3.0", linking to the pinned dataset commit and, from the licence name (titled "Source code"), to this repo.
 
 ### Follow-along behaviour
 

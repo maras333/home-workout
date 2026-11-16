@@ -91,6 +91,7 @@ export type Dictionary = {
   }
   footer: {
     credit: string
+    /** The title of the footer's AGPL-3.0 link, which leads to our source. */
     sourceCode: string
   }
   favourites: {

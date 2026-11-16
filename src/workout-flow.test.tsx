@@ -132,7 +132,7 @@ describe('Workout preview', () => {
     expect(screen.queryByText(/rest|change-over/i)).not.toBeInTheDocument()
 
     const footer = screen.getByRole('contentinfo')
-    expect(footer).toHaveTextContent('Exercise data & GIFs: ExerciseDB (AGPL-3.0) · Source code')
+    expect(footer).toHaveTextContent('Exercise data & GIFs: ExerciseDB · AGPL-3.0')
   })
 
   it('shows the same Workout after a reload', async () => {

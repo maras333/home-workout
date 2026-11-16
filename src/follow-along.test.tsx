@@ -252,7 +252,7 @@ describe('Follow-along', () => {
     expect(rows(main)).toEqual(['squat5 reps', 'side plank10 s per side', 'squat5 reps'])
     expect(rows(coolDown)).toEqual(['child pose20 s'])
     expect(screen.getByRole('contentinfo')).toHaveTextContent(
-      'Exercise data & GIFs: ExerciseDB (AGPL-3.0) · Source code',
+      'Exercise data & GIFs: ExerciseDB · AGPL-3.0',
     )
     for (const row of screen.getAllByRole('listitem')) {
       expect(row.querySelector('img')).toHaveAttribute(
