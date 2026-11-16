@@ -89,6 +89,20 @@ export type Dictionary = {
     planned: (clock: string) => string
     planAnother: string
   }
+  /** The Exercise library page and its link in the header. */
+  library: {
+    link: string
+    heading: string
+    search: string
+    searchPlaceholder: string
+    muscleGroup: string
+    equipment: string
+    difficulty: string
+    /** e.g. "12 of 144 Exercises" */
+    count: (shown: number, total: number) => string
+    clear: string
+    empty: string
+  }
   footer: {
     credit: string
     /** The title of the footer's AGPL-3.0 link, which leads to our source. */
@@ -247,6 +261,18 @@ const en: Dictionary = {
     planned: (clock) => `${clock} planned. Well done!`,
     planAnother: 'Plan another Workout',
   },
+  library: {
+    link: 'Exercises',
+    heading: 'Exercise library',
+    search: 'Search by name',
+    searchPlaceholder: 'e.g. squat',
+    muscleGroup: 'Muscle group',
+    equipment: 'Equipment',
+    difficulty: 'Difficulty',
+    count: (shown, total) => `${shown} of ${total} ${total === 1 ? 'Exercise' : 'Exercises'}`,
+    clear: 'Clear filters',
+    empty: 'No Exercise matches the filters',
+  },
   footer: {
     credit: 'Exercise data & GIFs:',
     sourceCode: 'Source code',
@@ -381,6 +407,19 @@ const pl: Dictionary = {
     complete: 'Trening zakończony',
     planned: (clock) => `Zaplanowano ${clock}. Dobra robota!`,
     planAnother: 'Zaplanuj kolejny trening',
+  },
+  library: {
+    link: 'Ćwiczenia',
+    heading: 'Biblioteka ćwiczeń',
+    search: 'Szukaj po nazwie',
+    searchPlaceholder: 'np. przysiad',
+    muscleGroup: 'Partia mięśni',
+    equipment: 'Sprzęt',
+    difficulty: 'Poziom',
+    // "z" takes the genitive: "z 1 Ćwiczenia", "z 144 Ćwiczeń".
+    count: (shown, total) => `${shown} z ${total} ${total === 1 ? 'Ćwiczenia' : 'Ćwiczeń'}`,
+    clear: 'Wyczyść filtry',
+    empty: 'Żadne ćwiczenie nie pasuje do filtrów',
   },
   footer: {
     credit: 'Dane ćwiczeń i GIF-y:',
