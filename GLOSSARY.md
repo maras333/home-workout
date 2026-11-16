@@ -9,6 +9,11 @@ One movement in the library (e.g. goblet squat), with its steps, Muscle groups, 
 _Avoid_: Move, drill
 _Polish_: Ćwiczenie
 
+**Exercise library**:
+Every Exercise the app knows and builds Workouts from.
+_Avoid_: Catalog, database, exercise list
+_Polish_: Biblioteka ćwiczeń
+
 **Muscle group**:
 One of seven coarse body areas an Exercise trains: chest, back, shoulders, arms, core, glutes, legs.
 _Avoid_: Body part, target muscle
@@ -24,7 +29,7 @@ _Avoid_: Preferences, settings, query
 _Polish_: "Jaki trening chcesz wykonać?" (the form's heading)
 
 **Difficulty**:
-How hard the user wants the Workout to be: Beginner, Intermediate or Advanced.
+How hard a Workout is meant to be, or how hard an Exercise is: Beginner, Intermediate or Advanced. A Workout uses Exercises up to its Difficulty.
 _Avoid_: Level, intensity, fitness level
 _Polish_: Poziom (Początkujący, Średni, Zaawansowany)
 
