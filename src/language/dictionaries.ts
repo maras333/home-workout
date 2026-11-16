@@ -66,8 +66,12 @@ export type Dictionary = {
     restProgress: string
     /** Read out before "1:05 / 2:35". */
     timeDone: string
-    /** Read out before a finished Set in the timeline. */
+    /** Read out before a finished Set in the Timeline. */
     done: string
+    /** The Timeline's name: its button and its panel on a phone. */
+    timeline: string
+    /** Closes the Timeline's panel on a phone. */
+    closeTimeline: string
     back: string
     pause: string
     resume: string
@@ -222,6 +226,8 @@ const en: Dictionary = {
     restProgress: 'Rest progress',
     timeDone: 'Time done:',
     done: 'Done:',
+    timeline: 'Timeline',
+    closeTimeline: 'Close',
     back: 'Back',
     pause: 'Pause',
     resume: 'Resume',
@@ -354,6 +360,8 @@ const pl: Dictionary = {
     restProgress: 'Postęp przerwy',
     timeDone: 'Czas za tobą:',
     done: 'Zrobione:',
+    timeline: 'Przebieg',
+    closeTimeline: 'Zamknij',
     back: 'Wstecz',
     pause: 'Pauza',
     resume: 'Wznów',

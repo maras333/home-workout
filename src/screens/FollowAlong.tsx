@@ -12,10 +12,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { SaveFavouriteButton } from '@/favourites/SaveFavouriteButton'
 import { useLanguage, useText } from '@/language'
 import { exerciseText } from '@/library'
 import { useControlKeys } from '@/follow-along/keys'
+import { usePhoneLayout } from '@/follow-along/layout'
 import { usePlayer, type Player } from '@/follow-along/player'
 import { startingState, useSaveProgress } from '@/follow-along/progress'
 import { useCues, useSoundSettings } from '@/follow-along/sound'
@@ -69,6 +71,7 @@ function FollowAlongSession({ workout }: { workout: Workout }) {
   const [sound, setSound] = useSoundSettings()
   const speaker = useSpeaker()
   useCues(steps, player, sound, speaker)
+  const phone = usePhoneLayout()
 
   const upNext = nextWork(steps, player.index)
   if (upNext) preload(upNext.set.exercise.gifUrl, { as: 'image' })
@@ -80,7 +83,11 @@ function FollowAlongSession({ workout }: { workout: Workout }) {
       <SoundToggles settings={sound} onChange={setSound} speaker={speaker} />
       <div className="flex flex-col gap-8 lg:flex-row lg:items-start">
         <aside className="flex w-full shrink-0 flex-col gap-6 lg:w-80">
-          <Timeline steps={steps} player={player} total={total} />
+          {phone ? (
+            <TimelinePanel steps={steps} player={player} total={total} />
+          ) : (
+            <Timeline steps={steps} player={player} total={total} />
+          )}
           <EndWorkout open={ending !== null} onOpenChange={askToEnd} />
         </aside>
         <NowPlaying player={player} upNext={upNext} />
@@ -134,6 +141,43 @@ function Timeline({
       })}
     </div>
   )
+}
+
+/**
+ * The Timeline on a phone: hidden behind a button, it opens as a panel from the bottom. Unlike
+ * End Workout, it leaves the Workout running, so the current Set moves on in it.
+ */
+function TimelinePanel({
+  steps,
+  player,
+  total,
+}: {
+  steps: readonly Step[]
+  player: Player
+  total: number
+}) {
+  const text = useText().followAlong
+  return (
+    <Sheet>
+      <SheetTrigger asChild>
+        <Button variant="outline" className="self-start">
+          {text.timeline}
+        </Button>
+      </SheetTrigger>
+      <SheetContent closeLabel={text.closeTimeline} aria-describedby={undefined}>
+        <SheetTitle className="pr-10">{text.timeline}</SheetTitle>
+        <div ref={scrollToCurrentSet} className="-mx-4 overflow-y-auto px-4">
+          <Timeline steps={steps} player={player} total={total} />
+        </div>
+      </SheetContent>
+    </Sheet>
+  )
+}
+
+/** Brings the current Set into view once, when the panel opens (jsdom has no scrolling). */
+function scrollToCurrentSet(panel: HTMLElement | null) {
+  const current = panel?.querySelector('[aria-current="step"]')
+  current?.scrollIntoView?.({ block: 'center' })
 }
 
 function TimelineBlock({
