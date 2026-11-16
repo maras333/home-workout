@@ -7,7 +7,7 @@ const SOURCE_URL = 'https://github.com/maras333/home-workout'
 export function CreditFooter() {
   const text = useText().footer
   return (
-    <footer className="px-4 py-3 text-center text-xs text-muted-foreground">
+    <footer className="px-4 py-3 text-center text-xs break-words text-muted-foreground">
       {text.credit}{' '}
       <a className="underline" href={DATASET_URL} target="_blank" rel="noreferrer">
         ExerciseDB (AGPL-3.0)

@@ -14,7 +14,7 @@ import {
 } from '@/workout'
 
 const optionCard =
-  'flex cursor-pointer flex-col gap-1 rounded-lg border p-3 has-checked:border-primary has-checked:bg-muted has-focus-visible:ring-3 has-focus-visible:ring-ring/50'
+  'flex min-w-0 cursor-pointer flex-col gap-1 rounded-lg border p-2 break-words sm:p-3 has-checked:border-primary has-checked:bg-muted has-focus-visible:ring-3 has-focus-visible:ring-ring/50'
 
 function Field({ legend, children }: { legend: string; children: ReactNode }) {
   return (
@@ -79,12 +79,12 @@ export function WorkoutRequestForm() {
   }
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-12 p-8">
-      <form onSubmit={onSubmit} className="flex flex-col gap-8">
-        <h1 className="text-3xl font-bold">{text.heading}</h1>
+    <div className="mx-auto flex max-w-3xl flex-col gap-8 p-4 sm:gap-12 sm:p-8">
+      <form onSubmit={onSubmit} className="flex flex-col gap-6 sm:gap-8">
+        <h1 className="text-2xl font-bold sm:text-3xl">{text.heading}</h1>
 
         <Field legend={text.workoutType}>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3">
             {WORKOUT_TYPES.map((type) => (
               <RadioCard
                 key={type}
@@ -98,7 +98,7 @@ export function WorkoutRequestForm() {
         </Field>
 
         <Field legend={text.time}>
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-4 gap-2 sm:gap-3">
             {MINUTES.map((minutes) => (
               <RadioCard
                 key={minutes}
@@ -112,7 +112,7 @@ export function WorkoutRequestForm() {
         </Field>
 
         <Field legend={text.difficulty}>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-3">
             {DIFFICULTIES.map((difficulty) => (
               <RadioCard
                 key={difficulty}

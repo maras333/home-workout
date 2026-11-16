@@ -54,7 +54,7 @@ function BlockSection({
               <button
                 type="button"
                 onClick={() => onOpenExercise(set.exercise)}
-                className="flex flex-1 cursor-pointer items-center gap-4 p-2 text-left outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50"
+                className="flex min-w-0 flex-1 cursor-pointer items-center gap-3 p-2 text-left sm:gap-4 outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50"
               >
                 <img
                   src={set.exercise.gifUrl}
@@ -62,9 +62,9 @@ function BlockSection({
                   loading="lazy"
                   width={56}
                   height={56}
-                  className="size-14 rounded"
+                  className="size-14 shrink-0 rounded"
                 />
-                <span className="flex-1 capitalize">{name}</span>
+                <span className="min-w-0 flex-1 break-words capitalize">{name}</span>
                 <span className="text-muted-foreground">{targetText(set, language)}</span>
               </button>
               <Button
@@ -74,7 +74,7 @@ function BlockSection({
                 onClick={() => onSwap(index)}
               >
                 <Shuffle aria-hidden="true" />
-                {text.swap}
+                <span className="max-sm:sr-only">{text.swap}</span>
               </Button>
             </li>
           )
@@ -119,7 +119,7 @@ export function WorkoutPreview() {
   }
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-6 p-8">
+    <div className="mx-auto flex max-w-3xl flex-col gap-6 p-4 sm:p-8">
       <nav aria-label={text.actions} className="flex flex-wrap items-center gap-2">
         <Button
           variant="ghost"
@@ -133,19 +133,26 @@ export function WorkoutPreview() {
           {text.generateAnother}
         </Button>
         <SaveFavouriteButton workout={workout} />
-        <Button
-          size="lg"
-          className="px-6"
-          onClick={() => {
-            clearProgress()
-            navigate('/follow-along')
-          }}
+        {/* On a phone, Start Workout is a bar fixed to the bottom, under the thumb; the Layout
+            leaves room for it. On a laptop the wrapper disappears and it sits in the row. */}
+        <div
+          data-bottom-bar
+          className="max-sm:fixed max-sm:inset-x-0 max-sm:bottom-0 max-sm:z-10 max-sm:border-t max-sm:bg-background max-sm:p-4 max-sm:pb-[calc(1rem+env(safe-area-inset-bottom))] sm:contents"
         >
-          {text.start}
-        </Button>
+          <Button
+            size="lg"
+            className="px-6 max-sm:h-11 max-sm:w-full"
+            onClick={() => {
+              clearProgress()
+              navigate('/follow-along')
+            }}
+          >
+            {text.start}
+          </Button>
+        </div>
       </nav>
       <header className="flex flex-col gap-1">
-        <h1 className="text-3xl font-bold">{text.heading}</h1>
+        <h1 className="text-2xl font-bold sm:text-3xl">{text.heading}</h1>
         <p>{requestSummary(workout.request, language)}</p>
         <p className="text-muted-foreground">
           {text.plannedTotal(
