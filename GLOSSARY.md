@@ -54,7 +54,7 @@ _Avoid_: Interval, rep (a Set holds many reps)
 _Polish_: Seria
 
 **Favourite**:
-A Workout the user saved to start again later, kept exactly as it was generated.
+A Workout the user saved to start again later, kept exactly as it was generated. Named automatically, unless the user gives it their own name, which stays as typed in every Language.
 _Avoid_: Saved workout, bookmark, template
 _Polish_: Ulubiony (the section: Ulubione)
 
