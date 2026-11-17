@@ -36,12 +36,17 @@ export function favouriteName(request: WorkoutRequest, savedOn: Day, language: L
 }
 
 /**
- * The name a Favourite shows: built in the Language from its Workout and the day it was
+ * A Favourite's automatic name: built in the Language from its Workout and the day it was
  * saved, or, for one saved before that day was kept, the name it was saved with.
  */
-export function favouriteLabel({ name, savedOn, workout }: Favourite, language: Language): string {
+export function automaticLabel({ name, savedOn, workout }: Favourite, language: Language): string {
   const day = savedOn === undefined ? null : parseDay(savedOn)
   return day ? favouriteName(workout.request, day, language) : name
+}
+
+/** The name a Favourite shows: the user's own name if they gave it one, else the automatic one. */
+export function favouriteLabel(favourite: Favourite, language: Language): string {
+  return favourite.ownName ?? automaticLabel(favourite, language)
 }
 
 /** e.g. "12 reps", "40 s per side" */

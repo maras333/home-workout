@@ -188,6 +188,7 @@ function isFavourite(value: unknown): value is Favourite {
     typeof value.id === 'string' &&
     typeof value.name === 'string' &&
     (value.savedOn === undefined || typeof value.savedOn === 'string') &&
+    (value.ownName === undefined || typeof value.ownName === 'string') &&
     isWorkout(value.workout)
   )
 }

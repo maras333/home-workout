@@ -19,6 +19,8 @@ export type FavouritesStore = {
   /** Saves the Workout as a new Favourite, or removes it when it is one already. */
   toggle: (workout: Workout) => void
   remove: (id: string) => void
+  /** Gives the Favourite the user's own name; a blank one brings back the automatic name. */
+  rename: (id: string, name: string) => void
 }
 
 /** A unique id; `crypto.randomUUID` only exists on HTTPS pages and localhost. */
@@ -55,5 +57,12 @@ export function useFavourites(): FavouritesStore {
       return [{ id: newId(), name, workout, savedOn: formatDay(today) }, ...stored]
     })
 
-  return { favourites, full: favourites.length >= MAX_FAVOURITES, toggle, remove }
+  const rename = (id: string, name: string) => {
+    const ownName = name.trim() || undefined
+    change((stored) =>
+      stored.map((favourite) => (favourite.id === id ? { ...favourite, ownName } : favourite)),
+    )
+  }
+
+  return { favourites, full: favourites.length >= MAX_FAVOURITES, toggle, remove, rename }
 }

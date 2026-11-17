@@ -254,3 +254,148 @@ describe('Favourites', () => {
     expect(storedFavourites()).toContainEqual(other)
   })
 })
+
+/** A Favourite saved on 14 Nov, so its automatic name is "Full body · 15 min · Beginner · 14 Nov". */
+function storeDatedFavourite(extra: Record<string, unknown> = {}) {
+  const saved = [
+    { id: 'fav-0', name: 'Old name', workout: workout(), savedOn: '2026-11-14', ...extra },
+  ]
+  localStorage.setItem(FAVOURITES_KEY, JSON.stringify(saved))
+}
+
+const AUTOMATIC = 'Full body · 15 min · Beginner · 14 Nov'
+
+async function rename(user: User, from: string, to: string) {
+  await user.click(screen.getByRole('button', { name: `Rename “${from}”` }))
+  const dialog = screen.getByRole('dialog', { name: 'Rename this Favourite' })
+  const field = within(dialog).getByRole('textbox', { name: 'Name' })
+  await user.clear(field)
+  if (to !== '') await user.type(field, to)
+  await user.click(within(dialog).getByRole('button', { name: 'Save' }))
+}
+
+describe('Renaming a Favourite', () => {
+  it('shows the trimmed name in its row, and keeps it after a reload', async () => {
+    const user = userEvent.setup()
+    storeDatedFavourite()
+    const { unmount } = renderAt('/')
+
+    await rename(user, AUTOMATIC, '  Leg day  ')
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(favouriteRows()[0]).toHaveTextContent(/^Leg day/)
+    unmount()
+    renderAt('/')
+    expect(favouriteRows()[0]).toHaveTextContent(/^Leg day/)
+  })
+
+  it('opens an empty field with the automatic name as its placeholder and a hint', async () => {
+    const user = userEvent.setup()
+    storeDatedFavourite()
+    renderAt('/')
+
+    await user.click(screen.getByRole('button', { name: `Rename “${AUTOMATIC}”` }))
+
+    const field = screen.getByRole('textbox', { name: 'Name' })
+    expect(field).toHaveValue('')
+    expect(field).toHaveAttribute('placeholder', AUTOMATIC)
+    expect(field).toHaveAttribute('maxLength', '60')
+    expect(field).toHaveFocus()
+    expect(field).toHaveAccessibleDescription('Leave empty for the automatic name')
+  })
+
+  it('opens with the own name in the field, and an empty Save brings back the automatic name', async () => {
+    const user = userEvent.setup()
+    storeDatedFavourite({ ownName: 'Leg day' })
+    renderAt('/')
+
+    await user.click(screen.getByRole('button', { name: 'Rename “Leg day”' }))
+    expect(screen.getByRole('textbox', { name: 'Name' })).toHaveValue('Leg day')
+    await user.click(screen.getByRole('button', { name: 'Cancel' }))
+
+    await rename(user, 'Leg day', '   ')
+    expect(favouriteRows()[0]).toHaveTextContent(new RegExp(`^${AUTOMATIC}`))
+    expect(storedFavourites()[0]).not.toHaveProperty('ownName')
+  })
+
+  it('saves with Enter, and changes nothing on Cancel or Esc', async () => {
+    const user = userEvent.setup()
+    storeDatedFavourite()
+    renderAt('/')
+
+    await user.click(screen.getByRole('button', { name: `Rename “${AUTOMATIC}”` }))
+    await user.type(screen.getByRole('textbox', { name: 'Name' }), 'Nope')
+    await user.click(screen.getByRole('button', { name: 'Cancel' }))
+    await user.click(screen.getByRole('button', { name: `Rename “${AUTOMATIC}”` }))
+    await user.type(screen.getByRole('textbox', { name: 'Name' }), 'Nope')
+    await user.keyboard('{Escape}')
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(favouriteRows()[0]).toHaveTextContent(new RegExp(`^${AUTOMATIC}`))
+
+    await user.click(screen.getByRole('button', { name: `Rename “${AUTOMATIC}”` }))
+    await user.type(screen.getByRole('textbox', { name: 'Name' }), 'Leg day{Enter}')
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(favouriteRows()[0]).toHaveTextContent(/^Leg day/)
+  })
+
+  it('shows the own name when asking to delete, and keeps the Workout, order and Start', async () => {
+    const user = userEvent.setup()
+    const [first, second] = storeFavourites(2)
+    renderAt('/')
+
+    await rename(user, 'Favourite 2', 'Leg day')
+
+    expect(favouriteRows()[0]).toHaveTextContent(/^Favourite 1/)
+    expect(favouriteRows()[1]).toHaveTextContent(/^Leg day/)
+    expect(storedFavourites()).toEqual([first, { ...second, ownName: 'Leg day' }])
+
+    await user.click(within(favouriteRows()[1]).getByRole('button', { name: 'Delete' }))
+    expect(screen.getByRole('dialog')).toHaveTextContent('Leg day')
+    await user.click(screen.getByRole('button', { name: 'Cancel' }))
+
+    await user.click(within(favouriteRows()[1]).getByRole('button', { name: 'Start' }))
+    expect(screen.getByRole('heading', { level: 1, name: 'Workout preview' })).toBeInTheDocument()
+  })
+
+  it('offers no rename for a Favourite whose Exercise left the library', () => {
+    storeFavourites(1, (saved) => ({
+      ...saved,
+      coolDown: [{ ...saved.coolDown[0], exercise: { ...saved.coolDown[0].exercise, id: 'gone' } }],
+    }))
+    renderAt('/')
+
+    expect(
+      within(favouriteRows()[0]).queryByRole('button', { name: /^Rename/ }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('is lost when its Workout is un-saved with one click on Save in the preview', async () => {
+    const user = userEvent.setup()
+    await generate(user)
+    await user.click(saveButton())
+    await user.click(screen.getByRole('button', { name: '← Change request' }))
+    const [row] = favouriteRows()
+    await user.click(within(row).getByRole('button', { name: /^Rename/ }))
+    await user.type(screen.getByRole('textbox', { name: 'Name' }), 'Leg day{Enter}')
+    await user.click(within(favouriteRows()[0]).getByRole('button', { name: 'Start' }))
+
+    await user.click(saveButton())
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(saveButton()).toHaveAttribute('aria-pressed', 'false')
+    expect(storedFavourites()).toEqual([])
+    await user.click(saveButton())
+    expect(storedFavourites()[0]).not.toHaveProperty('ownName')
+  })
+
+  it('skips a stored Favourite whose own name is not text', () => {
+    storeFavourites(2)
+    const stored = JSON.parse(localStorage.getItem(FAVOURITES_KEY)!) as object[]
+    localStorage.setItem(FAVOURITES_KEY, JSON.stringify([{ ...stored[0], ownName: 42 }, stored[1]]))
+
+    renderAt('/')
+
+    expect(favouriteRows()).toHaveLength(1)
+    expect(favouriteRows()[0]).toHaveTextContent(/^Favourite 2/)
+  })
+})

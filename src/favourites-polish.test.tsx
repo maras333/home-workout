@@ -209,3 +209,56 @@ describe('Favourites in Polish', () => {
     expect(JSON.parse(localStorage.getItem(SOUND_KEY)!)).toEqual({ beeps: false, voice: true })
   })
 })
+
+describe('Renaming a Favourite in Polish', () => {
+  const AUTOMATIC_PL = 'Całe ciało · 15 min · Początkujący · 14 lis'
+  const AUTOMATIC_EN = 'Full body · 15 min · Beginner · 14 Nov'
+
+  function storeDatedFavourite() {
+    const saved = [{ id: 'fav-0', name: 'Old name', workout: workout(), savedOn: '2026-11-14' }]
+    localStorage.setItem(FAVOURITES_KEY, JSON.stringify(saved))
+  }
+
+  it('renames with Polish labels, and the own name stays as typed in English', async () => {
+    const user = userEvent.setup()
+    choosePolish()
+    storeDatedFavourite()
+    renderAt('/')
+
+    await user.click(screen.getByRole('button', { name: `Zmień nazwę: ${AUTOMATIC_PL}` }))
+    const dialog = screen.getByRole('dialog', { name: 'Zmień nazwę Ulubionego' })
+    const field = within(dialog).getByRole('textbox', { name: 'Nazwa' })
+    expect(field).toHaveAttribute('placeholder', AUTOMATIC_PL)
+    expect(field).toHaveAccessibleDescription('Zostaw puste, by wrócić do nazwy automatycznej')
+    expect(within(dialog).getByRole('button', { name: 'Anuluj' })).toBeInTheDocument()
+    await user.type(field, 'Dzień nóg')
+    await user.click(within(dialog).getByRole('button', { name: 'Zapisz' }))
+
+    expect(favouriteRows()[0]).toHaveTextContent(/^Dzień nóg/)
+    await user.click(within(favouriteRows()[0]).getByRole('button', { name: 'Usuń' }))
+    expect(screen.getByRole('dialog', { name: 'Usunąć z Ulubionych?' })).toHaveTextContent(
+      'Dzień nóg',
+    )
+    await user.click(screen.getByRole('button', { name: 'Anuluj' }))
+    await user.click(screen.getByRole('button', { name: 'EN' }))
+    expect(favouriteRows('Favourites')[0]).toHaveTextContent(/^Dzień nóg/)
+    expect(screen.getByRole('button', { name: 'Rename “Dzień nóg”' })).toBeInTheDocument()
+  })
+
+  it('brings back the automatic name, which again follows the Language', async () => {
+    const user = userEvent.setup()
+    choosePolish()
+    storeDatedFavourite()
+    renderAt('/')
+
+    await user.click(screen.getByRole('button', { name: `Zmień nazwę: ${AUTOMATIC_PL}` }))
+    await user.type(screen.getByRole('textbox', { name: 'Nazwa' }), 'Dzień nóg{Enter}')
+    await user.click(screen.getByRole('button', { name: 'Zmień nazwę: Dzień nóg' }))
+    await user.clear(screen.getByRole('textbox', { name: 'Nazwa' }))
+    await user.click(screen.getByRole('button', { name: 'Zapisz' }))
+
+    expect(favouriteRows()[0]).toHaveTextContent(new RegExp(`^${AUTOMATIC_PL}`))
+    await user.click(screen.getByRole('button', { name: 'EN' }))
+    expect(favouriteRows('Favourites')[0]).toHaveTextContent(new RegExp(`^${AUTOMATIC_EN}`))
+  })
+})

@@ -117,6 +117,11 @@ export type Dictionary = {
     cancel: string
     save: string
     full: string
+    /** The ✎ button's accessible name, e.g. "Rename “Leg day”". */
+    rename: (name: string) => string
+    renameTitle: string
+    nameField: string
+    nameHint: string
     /** Abbreviated, January first, for names like "14 Nov". */
     months: readonly string[]
   }
@@ -286,6 +291,10 @@ const en: Dictionary = {
     cancel: 'Cancel',
     save: 'Save',
     full: 'Favourites full — delete one first',
+    rename: (name) => `Rename “${name}”`,
+    renameTitle: 'Rename this Favourite',
+    nameField: 'Name',
+    nameHint: 'Leave empty for the automatic name',
     months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
   },
   speech: {
@@ -434,6 +443,10 @@ const pl: Dictionary = {
     cancel: 'Anuluj',
     save: 'Zapisz',
     full: 'Ulubione pełne — usuń jeden',
+    rename: (name) => `Zmień nazwę: ${name}`,
+    renameTitle: 'Zmień nazwę Ulubionego',
+    nameField: 'Nazwa',
+    nameHint: 'Zostaw puste, by wrócić do nazwy automatycznej',
     months: ['sty', 'lut', 'mar', 'kwi', 'maj', 'cze', 'lip', 'sie', 'wrz', 'paź', 'lis', 'gru'],
   },
   speech: {

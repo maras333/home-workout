@@ -50,7 +50,12 @@ export type Favourite = {
   workout: Workout
   /** The day it was saved, "2026-11-14"; missing on Favourites saved before it was kept. */
   savedOn?: string
+  /** The name the user gave it, shown as typed in every Language in place of the automatic one. */
+  ownName?: string
 }
 
 /** Favourites are capped; nothing is ever removed behind the user's back. */
 export const MAX_FAVOURITES = 20
+
+/** The longest name the user can give a Favourite. */
+export const MAX_FAVOURITE_NAME_LENGTH = 60

@@ -24,6 +24,7 @@ export {
 export {
   durationText,
   equipmentText,
+  automaticLabel,
   favouriteLabel,
   favouriteName,
   requestSummary,
