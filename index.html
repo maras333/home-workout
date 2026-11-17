@@ -5,6 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Home Workout</title>
     <meta name="theme-color" content="#171717" />
+    <!-- Dark before the first paint, so a dark Theme never flashes white; src/theme keeps it in step. -->
+    <script>
+      try {
+        var theme = JSON.parse(localStorage.getItem('home-workout:theme'))
+        var dark =
+          theme === 'dark' ||
+          (theme !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches)
+        document.documentElement.classList.toggle('dark', dark)
+        if (!dark)
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+      } catch (error) {}
+    </script>
     <link rel="icon" href="/favicon.ico" sizes="48x48" />
     <link rel="icon" href="/icon.svg" sizes="any" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon-180x180.png" />

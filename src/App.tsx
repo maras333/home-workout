@@ -1,6 +1,7 @@
 import { Link, Navigate, Outlet, Route, Routes, useMatch } from 'react-router'
 import { CreditFooter } from '@/components/CreditFooter'
 import { LanguageSwitch } from '@/components/LanguageSwitch'
+import { ThemeSwitch } from '@/components/ThemeSwitch'
 import { LanguageProvider, useText } from '@/language'
 import { ExerciseLibrary } from '@/screens/ExerciseLibrary'
 import { FollowAlong } from '@/screens/FollowAlong'
@@ -36,7 +37,10 @@ function Layout() {
             </Link>
           </nav>
         )}
-        <LanguageSwitch />
+        <div className="flex items-center gap-2">
+          <ThemeSwitch />
+          <LanguageSwitch />
+        </div>
       </header>
       <main className="flex-1">
         <Outlet />
