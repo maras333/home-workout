@@ -11,6 +11,7 @@ import {
   MEASURES,
   MUSCLE_GROUPS,
   WORKOUT_TYPES,
+  keyPoses,
   library,
   type BlockRole,
   type Difficulty,
@@ -41,6 +42,19 @@ describe('Exercise library data check', () => {
     (_name, exercise) => {
       expect(exercise.gifUrl).toBe(`/exercisedb/${exercise.id}.gif`)
       expect(existsSync(path.join(publicDir, exercise.gifUrl))).toBe(true)
+    },
+  )
+
+  it.each(library.map((exercise) => [exercise.name, exercise] as const))(
+    '%s has Key poses, each a file held for at least half a second',
+    (_name, exercise) => {
+      const poses = keyPoses(exercise)
+      expect(poses.length).toBeGreaterThan(0)
+      for (const [n, pose] of poses.entries()) {
+        expect(pose.url).toBe(`/exercisedb/poses/${exercise.id}-${n}.webp`)
+        expect(existsSync(path.join(publicDir, pose.url))).toBe(true)
+        if (poses.length > 1) expect(pose.holdMs).toBeGreaterThanOrEqual(500)
+      }
     },
   )
 

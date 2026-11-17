@@ -1,8 +1,9 @@
 import type { Language } from '@/language/types'
 import { curation } from './curation'
+import keyPoseHolds from './key-poses.json'
 import records from './exercisedb/exercises.json'
 import { polish } from './polish'
-import type { Exercise, ExerciseTags, ExerciseText } from './types'
+import type { Exercise, ExerciseTags, ExerciseText, KeyPose } from './types'
 
 export * from './types'
 
@@ -37,4 +38,13 @@ export function exerciseText(exercise: Exercise, language: Language): ExerciseTe
   const current = byId.get(exercise.id)
   if (!current) return { name: exercise.name, steps: exercise.steps }
   return otherLanguages[language]?.[current.id] ?? { name: current.name, steps: current.steps }
+}
+
+/**
+ * An Exercise's Key poses, in order, looked up by id: none when its GIF has none extracted
+ * or the saved copy left the library, and the GIF is shown instead.
+ */
+export function keyPoses(exercise: Exercise): KeyPose[] {
+  const holds = (keyPoseHolds as Record<string, number[]>)[exercise.id] ?? []
+  return holds.map((holdMs, n) => ({ url: `/exercisedb/poses/${exercise.id}-${n}.webp`, holdMs }))
 }

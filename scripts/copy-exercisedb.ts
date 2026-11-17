@@ -5,13 +5,15 @@
 //
 // The id list is the set of keys in src/library/curation.ts. Rerunning after
 // changing that list rewrites the records file, downloads GIFs for new ids and
-// deletes GIFs for ids no longer listed.
+// deletes GIFs for ids no longer listed. It then extracts each GIF's Key poses
+// (scripts/extract-key-poses.ts), the one modified copy, kept apart in poses/.
 
 import { existsSync } from 'node:fs'
 import { mkdir, readdir, rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { curation } from '../src/library/curation.ts'
+import { extractKeyPoses } from './extract-key-poses.ts'
 
 const REPO = 'bootstrapping-lab/exercisedb-api'
 const COMMIT = '7cdc82e1a14b06799d16c819d1082f3debb425ce'
@@ -75,8 +77,12 @@ async function main() {
   }
   await writeFile(
     path.join(gifDir, 'README.md'),
-    readme('Exercise GIFs, served as static files named by Exercise id.', '../../LICENSE'),
+    readme(
+      'Exercise GIFs, served as static files named by Exercise id. [`poses/`](poses) holds still frames modified from them; it has its own README.',
+      '../../LICENSE',
+    ),
   )
+  await extractKeyPoses()
 
   console.log('Done')
 }
