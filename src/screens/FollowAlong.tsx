@@ -23,6 +23,12 @@ import { startingState, useSaveProgress } from '@/follow-along/progress'
 import { useCues, useSoundSettings } from '@/follow-along/sound'
 import { useSpeaker, type Speaker } from '@/follow-along/voice'
 import { useWakeLock } from '@/follow-along/wake-lock'
+import { PrototypeSwitcher } from '@/components/PrototypeSwitcher'
+import {
+  PrototypeExerciseAnimation,
+  useVariant,
+  VARIANTS,
+} from '@/follow-along/PrototypeExerciseAnimation'
 import {
   clearProgress,
   loadWorkout,
@@ -332,6 +338,7 @@ function NowPlaying({
 }) {
   const { language } = useLanguage()
   const text = useText().followAlong
+  const variant = useVariant()
   const step = player.step
   if (!step) return null
   const look = phone ? PHONE_LOOK : LAPTOP_LOOK
@@ -343,14 +350,17 @@ function NowPlaying({
 
   return (
     <section aria-label={text.now} className={cn('flex flex-1 flex-col', look.section)}>
+      <PrototypeSwitcher variants={VARIANTS} current={variant} />
       <div className={cn('flex flex-col items-center', look.main)}>
         {shown && (
-          <img
-            src={shown.set.exercise.gifUrl}
+          // PROTOTYPE: ?variant= swaps the GIF for a key-pose cross-fade.
+          <PrototypeExerciseAnimation
+            id={shown.set.exercise.id}
+            gifUrl={shown.set.exercise.gifUrl}
             alt={shownName ?? ''}
-            width={288}
-            height={288}
-            className={cn('rounded-2xl bg-white', look.gif)}
+            className={look.gif}
+            paused={player.paused}
+            variant={variant}
           />
         )}
         <div className={cn('flex flex-col', look.details)}>
