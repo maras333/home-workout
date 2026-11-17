@@ -14,6 +14,8 @@ Visual layer only: colour tokens, theme, buttons, spacing. Screens and flows sta
 - The accent is used sparingly: primary actions, Follow-along progress, selected options.
 - Text on the accent is near-black in both themes (white on lime fails contrast). In the light theme the accent is slightly deeper so it does not glare on white.
 - No semantic colours for Difficulty or Blocks. Colouring them is a separate, later topic.
+- Rest progress in Follow-along is grey (was blue). The amber "switch sides" badge stays: warnings are the one exception.
+- The header marks the current tab (bold, lime underline, `aria-current="page"`): the library on `/exercises`, the app's name everywhere else.
 - Shade: **lime (prototype variant A)**: `oklch(0.841 0.238 128.85)` (`#a3e635`) in dark, a deeper `oklch(0.8 0.22 130)` in light. Neon yellow-green and mint were rejected. Prototype kept on branch `prototype/design-refresh`.
 
 ### Dark mode
