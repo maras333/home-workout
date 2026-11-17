@@ -254,7 +254,7 @@ function TimelineRow({ set, state }: { set: WorkoutSet; state: 'done' | 'now' | 
         loading="lazy"
         width={32}
         height={32}
-        className="size-8 rounded bg-white"
+        className="size-8 rounded bg-white dark:brightness-95"
       />
       {state === 'done' && <span className="sr-only">{text.done} </span>}
       <span className="flex-1 first-letter:uppercase">
@@ -609,7 +609,10 @@ function WorkoutComplete({ workout, total }: { workout: Workout; total: number }
       <h1 className="text-5xl font-bold">{text.complete}</h1>
       <p className="text-muted-foreground">{text.planned(clockText(total))}</p>
       <SaveFavouriteButton workout={workout} />
-      <Link to="/" className="text-primary underline-offset-4 hover:underline">
+      <Link
+        to="/"
+        className="underline decoration-primary decoration-2 underline-offset-4 hover:decoration-foreground"
+      >
         {text.planAnother}
       </Link>
     </div>

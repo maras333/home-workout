@@ -36,7 +36,7 @@ export function ExercisePicture({
         alt={alt}
         width={288}
         height={288}
-        className={cn('rounded-2xl bg-white', className)}
+        className={cn('rounded-2xl bg-white dark:brightness-95', className)}
       />
     )
   }
@@ -72,7 +72,7 @@ function CrossFade({
     <div
       role="img"
       aria-label={alt}
-      className={cn('relative overflow-hidden rounded-2xl bg-white', className)}
+      className={cn('relative overflow-hidden rounded-2xl bg-white dark:brightness-95', className)}
     >
       {poses.map((pose, n) => (
         <img

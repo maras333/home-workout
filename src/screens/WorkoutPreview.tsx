@@ -62,7 +62,7 @@ function BlockSection({
                   loading="lazy"
                   width={56}
                   height={56}
-                  className="size-14 shrink-0 rounded"
+                  className="size-14 shrink-0 rounded dark:brightness-95"
                 />
                 {/* On a phone the target goes under the name: beside it, a long Polish
                     target ("12 powtórzeń na stronę") left the name almost no width. */}
@@ -145,7 +145,7 @@ export function WorkoutPreview() {
         >
           <Button
             size="lg"
-            className="px-6 max-sm:h-11 max-sm:w-full"
+            className="max-sm:w-full"
             onClick={() => {
               clearProgress()
               navigate('/follow-along')
