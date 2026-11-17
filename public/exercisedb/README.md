@@ -1,6 +1,6 @@
 # ExerciseDB v1 subset
 
-Exercise GIFs, served as static files named by Exercise id.
+Exercise GIFs, served as static files named by Exercise id. [`poses/`](poses) holds still frames modified from them; it has its own README.
 
 - **Source:** [bootstrapping-lab/exercisedb-api](https://github.com/bootstrapping-lab/exercisedb-api) at commit [`7cdc82e`](https://github.com/bootstrapping-lab/exercisedb-api/tree/7cdc82e1a14b06799d16c819d1082f3debb425ce)
 - **Unmodified subset:** the files here are copied byte-for-byte (GIFs) or record-for-record (`exercises.json`) from that commit. Only a subset of Exercises is included; nothing is edited. Our own tags live separately in `src/library/curation.ts`.

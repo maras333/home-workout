@@ -68,6 +68,10 @@ The guided mode in which the app walks the user through a Workout in real time.
 _Avoid_: Player, training mode, coach mode
 _Polish_: Trening na żywo
 
+**Key pose**:
+One still frame of an Exercise's illustration that the illustration holds. Follow-along shows an Exercise by cross-fading from one Key pose to the next.
+_Avoid_: Keyframe, frame, pose image
+
 **Timeline**:
 The list of every Set of a Workout in Follow-along, by Block and Round, showing which are done and which is now.
 _Avoid_: Plan, schedule, playlist

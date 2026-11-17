@@ -59,3 +59,6 @@ export type Exercise = ExerciseTags & {
   /** Static file path of the Exercise's GIF. */
   gifUrl: string
 }
+
+/** One still frame of an Exercise's GIF that the GIF holds, and for how long. */
+export type KeyPose = { url: string; holdMs: number }

@@ -3,7 +3,8 @@
 //   npm run check:build   (builds first, then runs this script)
 //
 // The manifest must carry the agreed name, short name, display and icons, and
-// the service worker must precache the app shell and the Exercise data, but no GIF.
+// the service worker must precache the app shell and the Exercise data, but no GIF
+// or Key pose.
 
 import assert from 'node:assert/strict'
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
@@ -62,6 +63,7 @@ for (const extension of ['.js', '.css', '.woff2']) {
   }
 }
 assert.ok(!precached.some((url) => url.endsWith('.gif')), 'GIFs must not be precached')
+assert.ok(!precached.some((url) => url.endsWith('.webp')), 'Key poses must not be precached')
 
 // The Exercise data is bundled into the scripts: one precached script must hold it.
 const records = JSON.parse(
@@ -77,6 +79,7 @@ for (const { exerciseId } of records) {
 
 assert.match(sw, /NavigationRoute/, 'SPA routes need a navigation fallback offline')
 assert.match(sw, /CacheFirst\(\{cacheName:"exercise-gifs"/, 'GIFs must be cached cache-first')
+assert.match(sw, /CacheFirst\(\{cacheName:"exercise-poses"/, 'Key poses must be cached cache-first')
 assert.doesNotMatch(sw, /clientsClaim\(\)/, 'a new service worker must not claim open pages')
 // Workbox keeps a SKIP_WAITING message listener, which nothing in the app sends.
 const skipWaitingListener = /"SKIP_WAITING"===\w+\.data\.type&&self\.skipWaiting\(\)/

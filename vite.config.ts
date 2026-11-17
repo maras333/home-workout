@@ -42,7 +42,7 @@ const pwa = VitePWA({
   },
   workbox: {
     // The app shell: HTML, scripts (the Exercise data is bundled into them),
-    // styles, fonts and icons. GIFs are left out on purpose.
+    // styles, fonts and icons. GIFs and Key poses are left out on purpose.
     globPatterns: ['**/*.{html,js,css,woff2,ico,png,svg}'],
     skipWaiting: false,
     clientsClaim: false,
@@ -60,6 +60,22 @@ const pwa = VitePWA({
           cacheName: 'exercise-gifs',
           expiration: {
             maxEntries: 200,
+            maxAgeSeconds: 60 * 60 * 24 * 365,
+          },
+          cacheableResponse: { statuses: [0, 200] },
+        },
+      },
+      {
+        // So does its Key poses, which Follow-along cross-fades.
+        urlPattern: ({ url, sameOrigin }) =>
+          sameOrigin &&
+          url.pathname.startsWith('/exercisedb/poses/') &&
+          url.pathname.endsWith('.webp'),
+        handler: 'CacheFirst',
+        options: {
+          cacheName: 'exercise-poses',
+          expiration: {
+            maxEntries: 600,
             maxAgeSeconds: 60 * 60 * 24 * 365,
           },
           cacheableResponse: { statuses: [0, 200] },

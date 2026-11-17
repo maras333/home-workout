@@ -15,7 +15,7 @@ import {
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { SaveFavouriteButton } from '@/favourites/SaveFavouriteButton'
 import { useLanguage, useText } from '@/language'
-import { exerciseText } from '@/library'
+import { exerciseText, keyPoses } from '@/library'
 import { useControlKeys } from '@/follow-along/keys'
 import { usePhoneLayout } from '@/follow-along/layout'
 import { usePlayer, type Player } from '@/follow-along/player'
@@ -23,6 +23,7 @@ import { startingState, useSaveProgress } from '@/follow-along/progress'
 import { useCues, useSoundSettings } from '@/follow-along/sound'
 import { useSpeaker, type Speaker } from '@/follow-along/voice'
 import { useWakeLock } from '@/follow-along/wake-lock'
+import { ExercisePicture } from '@/follow-along/ExercisePicture'
 import {
   clearProgress,
   loadWorkout,
@@ -74,7 +75,11 @@ function FollowAlongSession({ workout }: { workout: Workout }) {
   const phone = usePhoneLayout()
 
   const upNext = nextWork(steps, player.index)
-  if (upNext) preload(upNext.set.exercise.gifUrl, { as: 'image' })
+  if (upNext) {
+    const poses = keyPoses(upNext.set.exercise)
+    const urls = poses.length > 0 ? poses.map((pose) => pose.url) : [upNext.set.exercise.gifUrl]
+    for (const url of urls) preload(url, { as: 'image' })
+  }
 
   if (player.finished) return <WorkoutComplete workout={workout} total={total} />
 
@@ -345,12 +350,11 @@ function NowPlaying({
     <section aria-label={text.now} className={cn('flex flex-1 flex-col', look.section)}>
       <div className={cn('flex flex-col items-center', look.main)}>
         {shown && (
-          <img
-            src={shown.set.exercise.gifUrl}
+          <ExercisePicture
+            exercise={shown.set.exercise}
             alt={shownName ?? ''}
-            width={288}
-            height={288}
-            className={cn('rounded-2xl bg-white', look.gif)}
+            paused={player.paused}
+            className={look.gif}
           />
         )}
         <div className={cn('flex flex-col', look.details)}>
