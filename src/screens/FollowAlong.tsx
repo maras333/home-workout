@@ -416,7 +416,7 @@ function NowPlaying({
         className={cn('bg-muted h-3 shrink-0 overflow-hidden rounded-full', look.progress)}
       >
         <div
-          className={cn('h-full transition-[width]', isWork ? 'bg-primary' : 'bg-sky-500')}
+          className={cn('h-full transition-[width]', isWork ? 'bg-primary' : 'bg-muted-foreground')}
           style={{ width: `${progress}%` }}
         />
       </div>
