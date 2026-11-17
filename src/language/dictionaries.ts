@@ -107,8 +107,6 @@ export type Dictionary = {
   }
   footer: {
     credit: string
-    /** The title of the footer's AGPL-3.0 link, which leads to our source. */
-    sourceCode: string
   }
   favourites: {
     heading: string
@@ -283,7 +281,6 @@ const en: Dictionary = {
   },
   footer: {
     credit: 'Exercise data & GIFs:',
-    sourceCode: 'Source code',
   },
   favourites: {
     heading: 'Favourites',
@@ -436,7 +433,6 @@ const pl: Dictionary = {
   },
   footer: {
     credit: 'Dane ćwiczeń i GIF-y:',
-    sourceCode: 'Kod źródłowy',
   },
   favourites: {
     heading: 'Ulubione',

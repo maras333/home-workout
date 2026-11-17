@@ -24,9 +24,7 @@ describe('app shell', () => {
       'href',
       'https://github.com/bootstrapping-lab/exercisedb-api/tree/7cdc82e',
     )
-    const source = within(footer).getByRole('link', { name: 'AGPL-3.0' })
-    expect(source).toHaveAttribute('href', 'https://github.com/maras333/home-workout')
-    expect(source).toHaveAccessibleDescription('Source code')
+    expect(within(footer).getAllByRole('link')).toHaveLength(1)
   })
 
   it('sends unknown routes to the Workout Request form', () => {
