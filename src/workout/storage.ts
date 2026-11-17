@@ -1,5 +1,6 @@
 import { DIFFICULTIES, EQUIPMENT, MUSCLE_GROUPS, WORKOUT_TYPES } from '@/library'
 import { LANGUAGES, type Language } from '@/language/types'
+import { THEMES, type Theme } from '@/theme/types'
 import { MINUTES } from './types'
 import type { Favourite, Workout, WorkoutRequest } from './types'
 
@@ -9,6 +10,7 @@ const SOUND_KEY = 'home-workout:sound-settings'
 const PROGRESS_KEY = 'home-workout:follow-along-progress'
 const FAVOURITES_KEY = 'home-workout:favourites'
 const LANGUAGE_KEY = 'home-workout:language'
+const THEME_KEY = 'home-workout:theme'
 
 const DEFAULT_REQUEST: WorkoutRequest = {
   workoutType: 'full body',
@@ -147,6 +149,16 @@ export function loadLanguage(): Language | null {
 
 export function saveLanguage(language: Language): void {
   write(LANGUAGE_KEY, language)
+}
+
+/** The saved Theme choice, or null when none is saved or it is corrupt. */
+export function loadTheme(): Theme | null {
+  const value = read(THEME_KEY)
+  return includes(THEMES, value) ? value : null
+}
+
+export function saveTheme(theme: Theme): void {
+  write(THEME_KEY, theme)
 }
 
 /** Follow-along progress older than this is ignored: the Workout was left long ago. */

@@ -58,6 +58,18 @@ describe('the header', () => {
     expect(screen.getByRole('link', { name: 'Exercises' })).toHaveAttribute('href', '/exercises')
   })
 
+  it.each([
+    ['/', 'Home Workout', 'Exercises'],
+    ['/workout', 'Home Workout', 'Exercises'],
+    ['/exercises', 'Exercises', 'Home Workout'],
+  ])('marks the current page on %s', (path, current, other) => {
+    storeWorkout()
+    renderAt(path)
+
+    expect(screen.getByRole('link', { name: current })).toHaveAttribute('aria-current', 'page')
+    expect(screen.getByRole('link', { name: other })).not.toHaveAttribute('aria-current')
+  })
+
   it.each(['phone', 'laptop'] as const)('has no links in Follow-along on a %s', (viewport) => {
     fakeViewport(viewport)
     storeWorkout()

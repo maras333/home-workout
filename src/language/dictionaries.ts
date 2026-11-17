@@ -1,10 +1,12 @@
 import type { Difficulty, Equipment, MuscleGroup, WorkoutType } from '@/library'
 import type { BlockName, RestLabel } from '@/workout/follow-along'
+import type { Theme } from '@/theme/types'
 import type { Language } from './types'
 
 /** Every user-facing string, one dictionary per Language; the type checker keeps both complete. */
 export type Dictionary = {
   languageSwitch: string
+  theme: { name: string; choices: Record<Theme, string> }
   /** The domain's words, as shown in options, summaries and the detail dialog. */
   terms: {
     workoutTypes: Record<WorkoutType, string>
@@ -160,6 +162,7 @@ const polish =
 
 const en: Dictionary = {
   languageSwitch: 'Language',
+  theme: { name: 'Theme', choices: { system: 'System', light: 'Light', dark: 'Dark' } },
   terms: {
     workoutTypes: {
       'full body': 'Full body',
@@ -311,6 +314,7 @@ const en: Dictionary = {
 
 const pl: Dictionary = {
   languageSwitch: 'Język',
+  theme: { name: 'Motyw', choices: { system: 'systemowy', light: 'jasny', dark: 'ciemny' } },
   terms: {
     workoutTypes: {
       'full body': 'Całe ciało',

@@ -38,7 +38,7 @@ export function ExerciseDetailDialog({
             alt={shown.name}
             width={360}
             height={360}
-            className="mx-auto aspect-square w-full max-w-90 rounded-lg bg-white"
+            className="mx-auto aspect-square w-full max-w-90 rounded-lg bg-white dark:brightness-95"
           />
           <div className="flex flex-col gap-1">
             <p>

@@ -81,3 +81,8 @@ _Polish_: Przebieg
 The language the app speaks to the user, on screen and aloud: English or Polish.
 _Avoid_: Locale, i18n, translation setting
 _Polish_: Język
+
+**Theme**:
+How the app looks: Light or Dark. The user chooses System (follow the device), Light or Dark; System is the default.
+_Avoid_: Colour scheme, appearance, skin, dark mode setting
+_Polish_: Motyw (systemowy, jasny, ciemny)
